@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ NeoSolar · Catálogo Futurista</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* ===== RESET & GLOBAL ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background: #0b0e1a;
+            color: #e0f0ff;
+            min-height: 100vh;
+            padding: 20px;
+            background-image: radial-gradient(circle at 20% 30%, #112244 0%, #05070e 90%);
+            background-attachment: fixed;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0e1a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #00d4ff;
+            border-radius: 10px;
+            box-shadow: 0 0 12px #00d4ff88;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 30px;
+            margin-bottom: 30px;
+            background: rgba(10, 14, 30, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 60px;
+            border: 1px solid rgba(0, 212, 255, 0.25);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.15);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 1.9rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #00d4ff, #a855f7, #00d4ff);
+            background-size: 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shineText 4s linear infinite;
+            letter-spacing: 2px;
+        }
+        @keyframes shineText {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .header .logo-icon {
+            font-size: 2rem;
+            margin-right: 10px;
+            color: #00d4ff;
+            filter: drop-shadow(0 0 8px #00d4ff);
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-neon {
+            background: transparent;
+            border: 1.5px solid #00d4ff;
+            color: #00d4ff;
+            padding: 10px 24px;
+            border-radius: 40px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            backdrop-filter: blur(4px);
+            background: rgba(0, 212, 255, 0.05);
+            box-shadow: 0 0 12px rgba(0, 212, 255, 0.1);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-neon:hover {
+            background: #00d4ff;
+            color: #0b0e1a;
+            box-shadow: 0 0 30px #00d4ffaa;
+            transform: scale(1.04);
+        }
+        .btn-neon.success {
+            border-color: #39ff14;
+            color: #39ff14;
+        }
+        .btn-neon.success:hover {
+            background: #39ff14;
+            color: #0b0e1a;
+            box-shadow: 0 0 30px #39ff14aa;
+        }
+        .btn-neon.danger {
+            border-color: #ff3b5c;
+            color: #ff3b5c;
+        }
+        .btn-neon.danger:hover {
+            background: #ff3b5c;
+            color: #0b0e1a;
+            box-shadow: 0 0 30px #ff3b5caa;
+        }
+        .btn-neon.admin {
+            border-color: #a855f7;
+            color: #a855f7;
+        }
+        .btn-neon.admin:hover {
+            background: #a855f7;
+            color: #0b0e1a;
+            box-shadow: 0 0 30px #a855f7aa;
+        }
+
+        /* ===== VISTAS ===== */
+        .view {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        .view.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== CATÁLOGO ===== */
+        .catalog-header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            gap: 15px;
+        }
+        .catalog-header .filter {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .catalog-header .filter label {
+            font-size: 0.8rem;
+            color: #88aacc;
+            letter-spacing: 1px;
+        }
+        .catalog-header .filter select {
+            background: #0b0e1a;
+            border: 1px solid #2a3a5a;
+            border-radius: 40px;
+            padding: 10px 20px;
+            color: #e0f0ff;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            outline: none;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .catalog-header .filter select:focus {
+            border-color: #00d4ff;
+            box-shadow: 0 0 20px #00d4ff44;
+        }
+
+        .catalog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            padding: 10px 0;
+        }
+
+        .card {
+            background: rgba(12, 18, 38, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 30px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            padding: 20px 18px 22px;
+            transition: all 0.35s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 212, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            border-radius: 30px;
+            background: linear-gradient(135deg, #00d4ff33, #a855f733, #00d4ff33);
+            background-size: 300% 300%;
+            z-index: -1;
+            animation: borderGlow 6s ease-in-out infinite;
+            opacity: 0.6;
+        }
+        @keyframes borderGlow {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        .card:hover {
+            transform: translateY(-8px) scale(1.01);
+            box-shadow: 0 20px 50px rgba(0, 212, 255, 0.25), 0 0 40px rgba(0, 212, 255, 0.1);
+            border-color: #00d4ff88;
+        }
+
+        .card-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 20px;
+            background: #0f1322;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: 0.3s;
+        }
+        .card-img:hover {
+            filter: brightness(1.1);
+        }
+        .img-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0f1322;
+            color: #2a3a5a;
+            font-size: 2.5rem;
+            border-radius: 20px;
+            height: 180px;
+            border: 1px dashed #2a3a5a;
+        }
+
+        .card-category {
+            font-size: 0.65rem;
+            color: #a855f7;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 6px 0 6px;
+            color: #f0f8ff;
+            letter-spacing: 0.5px;
+        }
+        .card-desc {
+            font-size: 0.8rem;
+            font-weight: 400;
+            color: #a0b8d0;
+            line-height: 1.5;
+            flex-grow: 1;
+            margin-bottom: 10px;
+            font-family: 'Segoe UI', sans-serif;
+            letter-spacing: 0.3px;
+        }
+        .card-price {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #39ff14;
+            text-shadow: 0 0 20px #39ff1466;
+            margin: 8px 0 4px;
+        }
+        .card-price span {
+            font-size: 0.9rem;
+            color: #88aacc;
+        }
+
+        .card-stock {
+            font-size: 0.7rem;
+            color: #88aacc;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+        .card-stock .badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 20px;
+            background: #00d4ff22;
+            border: 1px solid #00d4ff44;
+            color: #00d4ff;
+            font-weight: 600;
+        }
+        .card-stock .badge.agotado {
+            background: #ff3b5c22;
+            border-color: #ff3b5c66;
+            color: #ff3b5c;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        .card-actions .btn-neon {
+            flex: 1;
+            justify-content: center;
+            padding: 10px 12px;
+            font-size: 0.7rem;
+        }
+        .card-actions .btn-neon:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* ===== ADMIN ===== */
+        .admin-panel {
+            background: rgba(10, 14, 30, 0.6);
+            backdrop-filter: blur(12px);
+            border-radius: 40px;
+            padding: 30px;
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            box-shadow: 0 0 50px rgba(168, 85, 247, 0.08);
+        }
+
+        .admin-panel h2 {
+            font-size: 1.6rem;
+            color: #a855f7;
+            text-shadow: 0 0 30px #a855f766;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .admin-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 18px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            border-radius: 30px;
+            border: 1px solid rgba(168, 85, 247, 0.15);
+            margin-bottom: 40px;
+        }
+        .admin-form .field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .admin-form label {
+            font-size: 0.7rem;
+            color: #a0b8d0;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .admin-form input,
+        .admin-form textarea,
+        .admin-form select {
+            background: #0b0e1a;
+            border: 1px solid #2a3a5a;
+            border-radius: 16px;
+            padding: 12px 16px;
+            color: #e0f0ff;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: 0.3s;
+        }
+        .admin-form input:focus,
+        .admin-form textarea:focus,
+        .admin-form select:focus {
+            border-color: #a855f7;
+            box-shadow: 0 0 20px #a855f744;
+        }
+        .admin-form textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        .admin-form .checkbox-field {
+            flex-direction: row;
+            align-items: center;
+            gap: 12px;
+        }
+        .admin-form .checkbox-field input {
+            width: 22px;
+            height: 22px;
+            accent-color: #a855f7;
+        }
+        .admin-form .file-field {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .admin-form .file-field input[type="file"] {
+            background: transparent;
+            border: none;
+            padding: 8px 0;
+            color: #a0b8d0;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .admin-form .file-field .preview-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: #0f1322;
+            border: 1px solid #2a3a5a;
+        }
+
+        .admin-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 8px;
+            grid-column: 1 / -1;
+        }
+
+        .admin-list {
+            margin-top: 30px;
+        }
+        .admin-list .list-item {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px 20px;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 14px 20px;
+            border-radius: 20px;
+            border-bottom: 1px solid rgba(168, 85, 247, 0.08);
+            transition: 0.2s;
+            margin-bottom: 8px;
+        }
+        .admin-list .list-item:hover {
+            background: rgba(168, 85, 247, 0.05);
+        }
+        .admin-list .list-item .info {
+            flex: 1;
+            min-width: 150px;
+            font-size: 0.85rem;
+        }
+        .admin-list .list-item .info strong {
+            color: #f0f8ff;
+        }
+        .admin-list .list-item .info .small {
+            color: #88aacc;
+            font-size: 0.7rem;
+            margin-left: 12px;
+        }
+        .admin-list .list-item .actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .admin-list .list-item .actions .btn-neon {
+            padding: 6px 16px;
+            font-size: 0.65rem;
+        }
+        .admin-list .list-item .thumb {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: #0f1322;
+            border: 1px solid #2a3a5a;
+        }
+
+        /* ===== IMPORT / EXPORT ===== */
+        .io-section {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 30px;
+            padding: 20px 25px;
+            margin-top: 30px;
+            border: 1px solid rgba(168, 85, 247, 0.1);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 20px;
+        }
+        .io-section .io-group {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+        .io-section .io-group label {
+            font-size: 0.7rem;
+            color: #88aacc;
+            letter-spacing: 1px;
+        }
+        .io-section .io-group input {
+            background: #0b0e1a;
+            border: 1px solid #2a3a5a;
+            border-radius: 40px;
+            padding: 10px 18px;
+            color: #e0f0ff;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 0.8rem;
+            outline: none;
+            flex: 1;
+            min-width: 200px;
+        }
+        .io-section .io-group input:focus {
+            border-color: #a855f7;
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        .modal-overlay.open {
+            visibility: visible;
+            opacity: 1;
+        }
+        .modal-box {
+            background: #121a2e;
+            border-radius: 40px;
+            padding: 35px 40px;
+            max-width: 450px;
+            width: 90%;
+            border: 1px solid rgba(0, 212, 255, 0.25);
+            box-shadow: 0 0 60px rgba(0, 212, 255, 0.15);
+            transform: scale(0.95);
+            transition: 0.3s ease;
+        }
+        .modal-overlay.open .modal-box {
+            transform: scale(1);
+        }
+        .modal-box h3 {
+            font-size: 1.3rem;
+            color: #00d4ff;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .modal-box .field {
+            margin-bottom: 18px;
+        }
+        .modal-box .field label {
+            display: block;
+            font-size: 0.7rem;
+            color: #88aacc;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .modal-box .field input {
+            width: 100%;
+            padding: 14px 18px;
+            border-radius: 20px;
+            border: 1px solid #2a3a5a;
+            background: #0b0e1a;
+            color: #e0f0ff;
+            font-size: 1rem;
+            outline: none;
+        }
+        .modal-box .field input:focus {
+            border-color: #00d4ff;
+            box-shadow: 0 0 20px #00d4ff44;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+            justify-content: flex-end;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 640px) {
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+                border-radius: 30px;
+                padding: 18px;
+            }
+            .header h1 {
+                font-size: 1.4rem;
+                text-align: center;
+            }
+            .nav-buttons {
+                justify-content: center;
+            }
+            .admin-form {
+                grid-template-columns: 1fr;
+            }
+            .modal-box {
+                padding: 25px 20px;
+            }
+            .catalog-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .io-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+
+        .text-center {
+            text-align: center;
+        }
+        .text-muted {
+            color: #88aacc;
+            font-size: 0.8rem;
+        }
+        .mt-20 {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== HEADER ==================== -->
+    <header class="header">
+        <div style="display:flex;align-items:center;gap:8px;">
+            <span class="logo-icon"><i class="fas fa-solar-panel"></i></span>
+            <h1>NEO·SOLAR</h1>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-neon" id="btnCatalog" onclick="switchView('catalog')">
+                <i class="fas fa-th"></i> Catálogo
+            </button>
+            <!-- Admin oculto en menú, solo por URL -->
+        </div>
+    </header>
+
+    <!-- ==================== VISTA CATÁLOGO ==================== -->
+    <div id="catalogView" class="view active">
+        <div class="catalog-header">
+            <div class="filter">
+                <label><i class="fas fa-tags"></i> Categoría:</label>
+                <select id="categoryFilter" onchange="applyFilter()">
+                    <option value="all">Todas</option>
+                </select>
+            </div>
+            <div>
+                <span class="text-muted" id="productCount">0 productos</span>
+            </div>
+        </div>
+        <div id="catalogGrid" class="catalog-grid"></div>
+        <div id="emptyCatalog" class="text-center text-muted mt-20" style="display:none; padding:40px;">
+            <i class="fas fa-box-open" style="font-size:3rem; opacity:0.3;"></i>
+            <p style="margin-top:10px;">No hay productos en esta categoría.</p>
+        </div>
+    </div>
+
+    <!-- ==================== VISTA ADMIN (oculta, #/admin) ==================== -->
+    <div id="adminView" class="view">
+        <div class="admin-panel">
+            <h2><i class="fas fa-cog" style="color:#a855f7;"></i> Panel de Control</h2>
+
+            <!-- Configurar Teléfono -->
+            <div style="background:rgba(0,0,0,0.2); padding:20px 25px; border-radius:30px; margin-bottom:30px; border:1px solid rgba(168,85,247,0.1);">
+                <div style="display:flex; flex-wrap:wrap; align-items:center; gap:15px;">
+                    <label style="font-size:0.8rem; color:#a0b8d0; letter-spacing:1px;">
+                        <i class="fab fa-whatsapp" style="color:#25D366;"></i> NÚMERO WHATSAPP (código país, sin +):
+                    </label>
+                    <input type="text" id="phoneInput" placeholder="ej: 521234567890" style="flex:1; min-width:200px; background:#0b0e1a; border:1px solid #2a3a5a; border-radius:16px; padding:12px 18px; color:#e0f0ff; font-family:'Segoe UI',sans-serif; outline:none;">
+                    <button class="btn-neon success" onclick="savePhoneNumber()"><i class="fas fa-save"></i> Guardar</button>
+                    <span id="phoneStatus" style="font-size:0.75rem; color:#39ff14; margin-left:5px;"></span>
+                </div>
+            </div>
+
+            <!-- Formulario Agregar / Editar -->
+            <div class="admin-form" id="productForm">
+                <div class="field">
+                    <label><i class="fas fa-tag"></i> Nombre</label>
+                    <input type="text" id="prodName" placeholder="Ej: Panel Solar 550W">
+                </div>
+                <div class="field">
+                    <label><i class="fas fa-folder"></i> Categoría</label>
+                    <input type="text" id="prodCategory" placeholder="Ej: Paneles, Inversores, Baterías">
+                </div>
+                <div class="field file-field">
+                    <label><i class="fas fa-image"></i> Imagen (local)</label>
+                    <input type="file" id="prodImageFile" accept="image/*">
+                    <img id="prodImagePreview" class="preview-img" src="" alt="Vista previa" style="display:none;">
+                </div>
+                <div class="field">
+                    <label><i class="fas fa-align-left"></i> Descripción</label>
+                    <textarea id="prodDesc" placeholder="Breve descripción..."></textarea>
+                </div>
+                <div class="field">
+                    <label><i class="fas fa-dollar-sign"></i> Precio (USD)</label>
+                    <input type="number" id="prodPrice" placeholder="0.00" step="0.01">
+                </div>
+                <div class="field">
+                    <label><i class="fas fa-boxes"></i> Stock</label>
+                    <input type="number" id="prodStock" placeholder="Cantidad disponible" min="0">
+                </div>
+                <div class="field checkbox-field">
+                    <label style="display:flex; align-items:center; gap:8px;">
+                        <input type="checkbox" id="prodAvailable" checked>
+                        <span>Disponible</span>
+                    </label>
+                </div>
+                <div class="admin-actions">
+                    <button class="btn-neon success" id="formSaveBtn" onclick="saveProduct()">
+                        <i class="fas fa-plus-circle"></i> Agregar Producto
+                    </button>
+                    <button class="btn-neon" id="formCancelBtn" onclick="cancelEdit()" style="display:none;">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <input type="hidden" id="editId" value="">
+                    <input type="hidden" id="existingImage" value="">
+                </div>
+            </div>
+
+            <!-- Lista de productos en admin -->
+            <div class="admin-list">
+                <h3 style="color:#88aacc; font-size:1rem; margin-bottom:15px; letter-spacing:1px;">
+                    <i class="fas fa-list-ul"></i> Productos registrados
+                </h3>
+                <div id="adminProductList"></div>
+            </div>
+
+            <!-- Sección Importar / Exportar JSON -->
+            <div class="io-section">
+                <div class="io-group">
+                    <label><i class="fas fa-file-export"></i> Exportar JSON</label>
+                    <button class="btn-neon success" onclick="exportJSON()"><i class="fas fa-download"></i> Descargar</button>
+                </div>
+                <div class="io-group">
+                    <label><i class="fas fa-file-import"></i> Importar desde URL</label>
+                    <input type="text" id="importUrl" placeholder="URL del JSON (ej: raw de GitHub)">
+                    <button class="btn-neon admin" onclick="importFromURL()"><i class="fas fa-upload"></i> Cargar</button>
+                </div>
+                <div class="io-group">
+                    <label><i class="fas fa-sync-alt"></i> Reemplazar con datos de ejemplo</label>
+                    <button class="btn-neon" onclick="loadSampleData()"><i class="fas fa-undo"></i> Restaurar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL CARRITO ==================== -->
+    <div class="modal-overlay" id="cartModal">
+        <div class="modal-box">
+            <h3><i class="fas fa-shopping-cart" style="color:#39ff14;"></i> Añadir al carrito</h3>
+            <div id="cartProductInfo" style="margin-bottom:12px; font-size:0.9rem; color:#a0b8d0;"></div>
+            <div class="field">
+                <label>Cantidad (máx. <span id="cartMaxStock">0</span>)</label>
+                <input type="number" id="cartQty" value="1" min="1" step="1">
+            </div>
+            <div style="font-size:0.9rem; color:#88aacc; margin-top:4px;">
+                Total: <span id="cartTotal" style="color:#39ff14; font-weight:700;">0.00 USD</span>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-neon" onclick="closeCartModal()"><i class="fas fa-times"></i> Cancelar</button>
+                <button class="btn-neon success" onclick="confirmCart()"><i class="fab fa-whatsapp"></i> Enviar por WhatsApp</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        //  DATOS Y ALMACENAMIENTO
+        // ============================================================
+        let products = [];
+        let editingId = null;
+        let cartProductId = null;
+        let tempImageBase64 = '';
+        let currentCategoryFilter = 'all';
+
+        const STORAGE_KEY = 'neosolar_products';
+        const PHONE_KEY = 'neosolar_phone';
+
+        // ============================================================
+        //  INICIALIZACIÓN
+        // ============================================================
+        function loadData() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                products = JSON.parse(stored);
+            } else {
+                // Cargar datos de ejemplo con categorías
+                products = getSampleProducts();
+                saveToStorage();
+            }
+            // Cargar teléfono
+            const phone = localStorage.getItem(PHONE_KEY) || '';
+            document.getElementById('phoneInput').value = phone;
+            updatePhoneStatus();
+            // Actualizar filtros
+            populateCategoryFilter();
+            applyFilter();
+        }
+
+        function getSampleProducts() {
+            const sampleImg1 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiMwZjEzMjIiLz48dGV4dCB4PSI1MCIgeT0iMTEwIiBmb250LWZhbWlseT0iT3JiaXRyb24iIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiMyYTMhNWEiPlBhbmVsPC90ZXh0Pjwvc3ZnPg==';
+            const sampleImg2 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiMwZjEzMjIiLz48dGV4dCB4PSI1MCIgeT0iMTEwIiBmb250LWZhbWlseT0iT3JiaXRyb24iIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiMyYTMhNWEiPkludmVyc29yPC90ZXh0Pjwvc3ZnPg==';
+            const sampleImg3 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiMwZjEzMjIiLz48dGV4dCB4PSI1MCIgeT0iMTEwIiBmb250LWZhbWlseT0iT3JiaXRyb24iIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiMyYTMhNWEiPkJhdGVyw61hPC90ZXh0Pjwvc3ZnPg==';
+            const sampleImg4 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiMwZjEzMjIiLz48dGV4dCB4PSI1MCIgeT0iMTEwIiBmb250LWZhbWlseT0iT3JiaXRyb24iIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiMyYTMhNWEiPkNhYmxlPC90ZXh0Pjwvc3ZnPg==';
+            return [{
+                id: '1',
+                name: 'Panel Solar 550W',
+                category: 'Paneles',
+                image: sampleImg1,
+                description: 'Panel monocristalino de alto rendimiento, eficiencia 21.5%. Ideal para instalaciones residenciales.',
+                price: 189.00,
+                stock: 12,
+                available: true
+            }, {
+                id: '2',
+                name: 'Inversor Híbrido 5kW',
+                category: 'Inversores',
+                image: sampleImg2,
+                description: 'Inversor solar híbrido MPPT, compatible con baterías de litio. Pantalla LCD y monitorización WiFi.',
+                price: 799.00,
+                stock: 5,
+                available: true
+            }, {
+                id: '3',
+                name: 'Batería Litio 10kWh',
+                category: 'Baterías',
+                image: sampleImg3,
+                description: 'Batería de litio-ferrofosfato (LiFePO4) con BMS integrado. Ciclo de vida >6000 ciclos.',
+                price: 2450.00,
+                stock: 3,
+                available: true
+            }, {
+                id: '4',
+                name: 'Cable Solar 6mm² (100m)',
+                category: 'Accesorios',
+                image: sampleImg4,
+                description: 'Cable solar doble aislamiento, resistente a UV y alta temperatura. Incluye conectores MC4.',
+                price: 89.50,
+                stock: 0,
+                available: false
+            }];
+        }
+
+        function saveToStorage() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+        }
+
+        // ============================================================
+        //  TELÉFONO
+        // ============================================================
+        function savePhoneNumber() {
+            const val = document.getElementById('phoneInput').value.trim();
+            localStorage.setItem(PHONE_KEY, val);
+            updatePhoneStatus();
+        }
+
+        function updatePhoneStatus() {
+            const phone = localStorage.getItem(PHONE_KEY) || '';
+            const status = document.getElementById('phoneStatus');
+            if (phone) {
+                status.innerHTML = `<i class="fas fa-check-circle"></i> Configurado: +${phone}`;
+                status.style.color = '#39ff14';
+            } else {
+                status.innerHTML = `<i class="fas fa-exclamation-triangle"></i> No configurado`;
+                status.style.color = '#ffaa33';
+            }
+        }
+
+        function getPhoneNumber() {
+            return localStorage.getItem(PHONE_KEY) || '';
+        }
+
+        // ============================================================
+        //  VISTAS
+        // ============================================================
+        function switchView(view) {
+            document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+            if (view === 'catalog') {
+                document.getElementById('catalogView').classList.add('active');
+                renderCatalog();
+                history.pushState(null, '', '#/');
+            } else if (view === 'admin') {
+                document.getElementById('adminView').classList.add('active');
+                renderAdminList();
+                history.pushState(null, '', '#/admin');
+            }
+        }
+
+        window.addEventListener('hashchange', () => {
+            const hash = window.location.hash;
+            if (hash === '#/admin') {
+                switchView('admin');
+            } else {
+                switchView('catalog');
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            const hash = window.location.hash;
+            if (hash === '#/admin') {
+                switchView('admin');
+            } else {
+                switchView('catalog');
+            }
+            document.getElementById('prodImageFile').addEventListener('change', handleFileSelect);
+        });
+
+        // ============================================================
+        //  IMAGEN LOCAL
+        // ============================================================
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) {
+                tempImageBase64 = '';
+                document.getElementById('prodImagePreview').style.display = 'none';
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                tempImageBase64 = event.target.result;
+                const preview = document.getElementById('prodImagePreview');
+                preview.src = tempImageBase64;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ============================================================
+        //  CATÁLOGO Y FILTROS
+        // ============================================================
+        function populateCategoryFilter() {
+            const select = document.getElementById('categoryFilter');
+            const categories = new Set(products.map(p => p.category).filter(c => c));
+            select.innerHTML = '<option value="all">Todas</option>';
+            categories.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c;
+                opt.textContent = c;
+                select.appendChild(opt);
+            });
+            // Restaurar filtro actual
+            if (currentCategoryFilter && currentCategoryFilter !== 'all') {
+                if (categories.has(currentCategoryFilter)) {
+                    select.value = currentCategoryFilter;
+                } else {
+                    select.value = 'all';
+                    currentCategoryFilter = 'all';
+                }
+            } else {
+                select.value = 'all';
+                currentCategoryFilter = 'all';
+            }
+        }
+
+        function applyFilter() {
+            const select = document.getElementById('categoryFilter');
+            currentCategoryFilter = select.value;
+            renderCatalog();
+        }
+
+        function renderCatalog() {
+            const grid = document.getElementById('catalogGrid');
+            const empty = document.getElementById('emptyCatalog');
+            grid.innerHTML = '';
+
+            let filtered = products;
+            if (currentCategoryFilter !== 'all') {
+                filtered = products.filter(p => p.category === currentCategoryFilter);
+            }
+
+            if (filtered.length === 0) {
+                empty.style.display = 'block';
+                document.getElementById('productCount').textContent = '0 productos';
+                return;
+            }
+            empty.style.display = 'none';
+            document.getElementById('productCount').textContent = filtered.length + ' productos';
+
+            filtered.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'card';
+
+                const imgHTML = p.image && p.image.startsWith('data:') ?
+                    `<img class="card-img" src="${p.image}" alt="${p.name}" loading="lazy">` :
+                    `<div class="img-placeholder"><i class="fas fa-image"></i></div>`;
+
+                const stockText = p.available && p.stock > 0 ?
+                    `<span class="badge"><i class="fas fa-check-circle" style="color:#39ff14;"></i> ${p.stock} uds.</span>` :
+                    `<span class="badge agotado"><i class="fas fa-times-circle"></i> AGOTADO</span>`;
+
+                const disabledAttr = (!p.available || p.stock <= 0) ? 'disabled' : '';
+
+                card.innerHTML = `
+                    ${imgHTML}
+                    <div class="card-category">${p.category || 'Sin categoría'}</div>
+                    <div class="card-title">${p.name}</div>
+                    <div class="card-desc">${p.description || 'Sin descripción'}</div>
+                    <div class="card-price">$ ${p.price.toFixed(2)}</div>
+                    <div class="card-stock">${stockText}</div>
+                    <div class="card-actions">
+                        <button class="btn-neon" ${disabledAttr} onclick="openCartModal('${p.id}')">
+                            <i class="fas fa-cart-plus"></i> Añadir
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // ============================================================
+        //  ADMIN: LISTA Y CRUD
+        // ============================================================
+        function renderAdminList() {
+            const container = document.getElementById('adminProductList');
+            container.innerHTML = '';
+            if (products.length === 0) {
+                container.innerHTML = `<div class="text-muted" style="padding:20px;">No hay productos aún.</div>`;
+                return;
+            }
+            products.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'list-item';
+                const thumb = p.image && p.image.startsWith('data:') ?
+                    `<img class="thumb" src="${p.image}" alt="${p.name}">` :
+                    `<div class="thumb" style="display:flex;align-items:center;justify-content:center;color:#2a3a5a;"><i class="fas fa-image"></i></div>`;
+                div.innerHTML = `
+                    ${thumb}
+                    <div class="info">
+                        <strong>${p.name}</strong>
+                        <span class="small">${p.category || 'Sin cat.'}</span>
+                        <span class="small">$ ${p.price.toFixed(2)}</span>
+                        <span class="small" style="color:${p.available && p.stock>0 ? '#39ff14' : '#ff3b5c'}">
+                            ${p.available && p.stock>0 ? `Stock: ${p.stock}` : 'AGOTADO'}
+                        </span>
+                    </div>
+                    <div class="actions">
+                        <button class="btn-neon" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i> Editar</button>
+                        <button class="btn-neon danger" onclick="deleteProduct('${p.id}')"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function saveProduct() {
+            const name = document.getElementById('prodName').value.trim();
+            const category = document.getElementById('prodCategory').value.trim();
+            const description = document.getElementById('prodDesc').value.trim();
+            const price = parseFloat(document.getElementById('prodPrice').value);
+            const stock = parseInt(document.getElementById('prodStock').value) || 0;
+            const available = document.getElementById('prodAvailable').checked;
+            const editId = document.getElementById('editId').value;
+
+            let image = document.getElementById('existingImage').value;
+            if (tempImageBase64) {
+                image = tempImageBase64;
+            }
+
+            if (!name || isNaN(price) || price < 0) {
+                alert('Por favor, completa el nombre y un precio válido.');
+                return;
+            }
+
+            if (editId) {
+                const idx = products.findIndex(p => p.id === editId);
+                if (idx !== -1) {
+                    products[idx] = { ...products[idx], name, category, image, description, price, stock, available };
+                }
+                document.getElementById('editId').value = '';
+                document.getElementById('formSaveBtn').innerHTML = '<i class="fas fa-plus-circle"></i> Agregar Producto';
+                document.getElementById('formCancelBtn').style.display = 'none';
+            } else {
+                const newProduct = {
+                    id: Date.now().toString(36) + Math.random().toString(36).substr(2, 4),
+                    name,
+                    category,
+                    image: image || '',
+                    description,
+                    price,
+                    stock,
+                    available
+                };
+                products.push(newProduct);
+            }
+
+            saveToStorage();
+            clearForm();
+            renderAdminList();
+            populateCategoryFilter();
+            applyFilter();
+        }
+
+        function editProduct(id) {
+            const p = products.find(prod => prod.id === id);
+            if (!p) return;
+            document.getElementById('prodName').value = p.name;
+            document.getElementById('prodCategory').value = p.category || '';
+            document.getElementById('prodDesc').value = p.description || '';
+            document.getElementById('prodPrice').value = p.price;
+            document.getElementById('prodStock').value = p.stock;
+            document.getElementById('prodAvailable').checked = p.available;
+            document.getElementById('editId').value = p.id;
+            document.getElementById('existingImage').value = p.image || '';
+            const preview = document.getElementById('prodImagePreview');
+            if (p.image && p.image.startsWith('data:')) {
+                preview.src = p.image;
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+            tempImageBase64 = '';
+            document.getElementById('prodImageFile').value = '';
+            document.getElementById('formSaveBtn').innerHTML = '<i class="fas fa-save"></i> Actualizar Producto';
+            document.getElementById('formCancelBtn').style.display = 'inline-flex';
+            document.getElementById('productForm').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelEdit() {
+            clearForm();
+            document.getElementById('editId').value = '';
+            document.getElementById('formSaveBtn').innerHTML = '<i class="fas fa-plus-circle"></i> Agregar Producto';
+            document.getElementById('formCancelBtn').style.display = 'none';
+        }
+
+        function deleteProduct(id) {
+            if (!confirm('¿Eliminar este producto permanentemente?')) return;
+            products = products.filter(p => p.id !== id);
+            saveToStorage();
+            renderAdminList();
+            populateCategoryFilter();
+            applyFilter();
+        }
+
+        function clearForm() {
+            document.getElementById('prodName').value = '';
+            document.getElementById('prodCategory').value = '';
+            document.getElementById('prodDesc').value = '';
+            document.getElementById('prodPrice').value = '';
+            document.getElementById('prodStock').value = '';
+            document.getElementById('prodAvailable').checked = true;
+            document.getElementById('editId').value = '';
+            document.getElementById('existingImage').value = '';
+            document.getElementById('prodImageFile').value = '';
+            document.getElementById('prodImagePreview').style.display = 'none';
+            tempImageBase64 = '';
+        }
+
+        // ============================================================
+        //  IMPORTAR / EXPORTAR JSON
+        // ============================================================
+        function exportJSON() {
+            const dataStr = JSON.stringify(products, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'neosolar_catalog.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importFromURL() {
+            const url = document.getElementById('importUrl').value.trim();
+            if (!url) {
+                alert('Ingresa una URL válida.');
+                return;
+            }
+            if (!confirm('Esto reemplazará todos los productos actuales. ¿Continuar?')) return;
+            fetch(url)
+                .then(res => {
+                    if (!res.ok) throw new Error('Error al obtener el archivo');
+                    return res.json();
+                })
+                .then(data => {
+                    if (!Array.isArray(data)) throw new Error('El formato no es un array de productos');
+                    // Validar estructura básica
+                    products = data;
+                    saveToStorage();
+                    clearForm();
+                    renderAdminList();
+                    populateCategoryFilter();
+                    applyFilter();
+                    alert('¡Importación exitosa!');
+                })
+                .catch(err => {
+                    alert('Error al importar: ' + err.message);
+                });
+        }
+
+        function loadSampleData() {
+            if (!confirm('Restaurar datos de ejemplo (se perderán los cambios no guardados). ¿Continuar?')) return;
+            products = getSampleProducts();
+            saveToStorage();
+            clearForm();
+            renderAdminList();
+            populateCategoryFilter();
+            applyFilter();
+            alert('Datos de ejemplo cargados.');
+        }
+
+        // ============================================================
+        //  CARRITO (MODAL)
+        // ============================================================
+        function openCartModal(productId) {
+            const p = products.find(prod => prod.id === productId);
+            if (!p) return;
+            if (!p.available || p.stock <= 0) {
+                alert('Este producto no está disponible.');
+                return;
+            }
+            cartProductId = productId;
+            document.getElementById('cartProductInfo').innerHTML =
+                `<strong>${p.name}</strong> · $ ${p.price.toFixed(2)}/ud.`;
+            document.getElementById('cartMaxStock').textContent = p.stock;
+            document.getElementById('cartQty').value = 1;
+            document.getElementById('cartQty').max = p.stock;
+            updateCartTotal();
+            document.getElementById('cartModal').classList.add('open');
+        }
+
+        function closeCartModal() {
+            document.getElementById('cartModal').classList.remove('open');
+            cartProductId = null;
+        }
+
+        function updateCartTotal() {
+            const p = products.find(prod => prod.id === cartProductId);
+            if (!p) return;
+            const qty = parseInt(document.getElementById('cartQty').value) || 1;
+            const total = p.price * qty;
+            document.getElementById('cartTotal').textContent = total.toFixed(2) + ' USD';
+        }
+
+        document.getElementById('cartQty').addEventListener('input', updateCartTotal);
+
+        function confirmCart() {
+            const phone = getPhoneNumber();
+            if (!phone) {
+                alert('Primero configura tu número de teléfono en el panel de administración.');
+                return;
+            }
+            const p = products.find(prod => prod.id === cartProductId);
+            if (!p) return;
+            const qty = parseInt(document.getElementById('cartQty').value) || 1;
+            if (qty < 1) {
+                alert('La cantidad debe ser al menos 1.');
+                return;
+            }
+            if (qty > p.stock) {
+                alert(`No hay suficiente stock. Disponible: ${p.stock}`);
+                return;
+            }
+            const total = p.price * qty;
+            const mensaje =
+                `Hola, me gustaría realizar el siguiente pedido:\n` +
+                `- Producto: ${p.name}\n` +
+                `- Cantidad: ${qty}\n` +
+                `- Precio unitario: $ ${p.price.toFixed(2)}\n` +
+                `- Total: $ ${total.toFixed(2)}\n\n` +
+                `Gracias.`;
+
+            const url = `https://wa.me/${phone}?text=${encodeURIComponent(mensaje)}`;
+            window.open(url, '_blank');
+            closeCartModal();
+        }
+
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('cartModal').addEventListener('click', function(e) {
+            if (e.target === this) closeCartModal();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeCartModal();
+            }
+        });
+
+        // ============================================================
+        //  FIN
+        // ============================================================
+        console.log('⚡ NeoSolar Catálogo Futurista con categorías y JSON import/export');
+        console.log('📦 Productos:', products);
+        console.log('📱 Teléfono:', getPhoneNumber() || '(no configurado)');
+        console.log('🔐 Admin oculto, accede con #/admin en la URL.');
+    </script>
+
+</body>
+  </html>
