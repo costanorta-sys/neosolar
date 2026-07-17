@@ -201,14 +201,14 @@
 
         .catalog-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 35px;
             padding: 10px 0;
         }
 
-        /* ===== TARJETAS ===== */
+        /* ===== TARJETAS MEJORADAS ===== */
         .card {
-            background: rgba(12, 18, 38, 0.7);
+            background: rgba(12, 18, 38, 0.8);
             backdrop-filter: blur(12px);
             border-radius: 30px;
             border: 1px solid rgba(0, 212, 255, 0.2);
@@ -251,49 +251,57 @@
             border-color: #00d4ff88;
         }
 
-        /* --- IMAGEN MÁS ALTA Y CON CLICK --- */
+        /* --- IMAGEN GRANDE Y BIEN AJUSTADA --- */
         .card-img-wrapper {
             position: relative;
             width: 100%;
-            height: 260px; /* ⬆️ altura aumentada */
+            height: 300px; /* ⬆️ altura considerablemente mayor */
             border-radius: 20px;
             overflow: hidden;
-            background: #0f1322;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: #0a0d1a;
+            border: 1px solid rgba(255, 255, 255, 0.08);
             cursor: pointer;
             transition: 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
+            margin-bottom: 10px;
         }
         .card-img-wrapper:hover {
-            filter: brightness(1.1);
+            filter: brightness(1.08);
             border-color: #00d4ff66;
         }
         .card-img-wrapper img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain; /* ⬅️ imagen completa sin recortes */
+            background: #0a0d1a;
+            padding: 6px;
             transition: 0.3s;
         }
         .card-img-wrapper .img-placeholder {
-            font-size: 3rem;
+            font-size: 4rem;
             color: #2a3a5a;
+            opacity: 0.5;
         }
         /* overlay sutil al pasar el mouse */
         .card-img-wrapper::after {
             content: '🔍';
             position: absolute;
-            bottom: 12px;
-            right: 14px;
-            font-size: 1.4rem;
+            bottom: 16px;
+            right: 18px;
+            font-size: 1.6rem;
             opacity: 0;
             transition: 0.3s;
-            text-shadow: 0 0 15px #000;
+            text-shadow: 0 0 20px #000;
             pointer-events: none;
+            background: rgba(0,0,0,0.4);
+            border-radius: 50%;
+            padding: 6px 10px;
+            line-height: 1;
         }
         .card-img-wrapper:hover::after {
-            opacity: 0.8;
+            opacity: 0.9;
         }
 
         .card-category {
@@ -301,32 +309,32 @@
             color: #a855f7;
             letter-spacing: 1px;
             text-transform: uppercase;
-            margin-top: 12px;
-            margin-bottom: 4px;
+            margin-top: 4px;
+            margin-bottom: 2px;
         }
         .card-title {
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             font-weight: 700;
-            margin: 6px 0 6px;
+            margin: 4px 0 6px;
             color: #f0f8ff;
             letter-spacing: 0.5px;
         }
         .card-desc {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 400;
-            color: #a0b8d0;
+            color: #b0c8e0;
             line-height: 1.5;
             flex-grow: 1;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             font-family: 'Segoe UI', sans-serif;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.2px;
         }
         .card-price {
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             font-weight: 700;
             color: #39ff14;
             text-shadow: 0 0 20px #39ff1466;
-            margin: 8px 0 4px;
+            margin: 6px 0 4px;
         }
         .card-price span {
             font-size: 0.9rem;
@@ -334,14 +342,14 @@
         }
 
         .card-stock {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             color: #88aacc;
-            margin-bottom: 12px;
+            margin-bottom: 14px;
             letter-spacing: 0.5px;
         }
         .card-stock .badge {
             display: inline-block;
-            padding: 2px 12px;
+            padding: 4px 14px;
             border-radius: 20px;
             background: #00d4ff22;
             border: 1px solid #00d4ff44;
@@ -357,14 +365,14 @@
         .card-actions {
             display: flex;
             gap: 10px;
-            margin-top: 8px;
+            margin-top: 6px;
             flex-wrap: wrap;
         }
         .card-actions .btn-neon {
             flex: 1;
             justify-content: center;
-            padding: 10px 12px;
-            font-size: 0.7rem;
+            padding: 12px 10px;
+            font-size: 0.75rem;
         }
         .card-actions .btn-neon:disabled {
             opacity: 0.4;
@@ -373,22 +381,22 @@
             box-shadow: none !important;
         }
 
-        /* ===== LIGHTBOX ===== */
+        /* ===== LIGHTBOX MEJORADO ===== */
         .lightbox {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.88);
-            backdrop-filter: blur(12px);
+            background: rgba(0, 0, 0, 0.92);
+            backdrop-filter: blur(16px);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 9999;
             visibility: hidden;
             opacity: 0;
-            transition: all 0.35s ease;
+            transition: all 0.4s ease;
             padding: 30px;
             cursor: zoom-out;
         }
@@ -397,23 +405,24 @@
             opacity: 1;
         }
         .lightbox img {
-            max-width: 90%;
-            max-height: 85vh;
+            max-width: 92%;
+            max-height: 88vh;
             object-fit: contain;
-            border-radius: 20px;
-            box-shadow: 0 0 60px rgba(0, 212, 255, 0.25);
+            border-radius: 24px;
+            box-shadow: 0 0 80px rgba(0, 212, 255, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.1);
             transform: scale(0.95);
-            transition: transform 0.35s ease;
+            transition: transform 0.4s ease;
+            background: #0a0d1a;
         }
         .lightbox.open img {
             transform: scale(1);
         }
         .lightbox .close-lightbox {
             position: absolute;
-            top: 25px;
-            right: 35px;
-            font-size: 2.8rem;
+            top: 30px;
+            right: 40px;
+            font-size: 3rem;
             color: #fff;
             cursor: pointer;
             opacity: 0.7;
@@ -421,6 +430,7 @@
             background: none;
             border: none;
             font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 20px #000;
         }
         .lightbox .close-lightbox:hover {
             opacity: 1;
@@ -428,15 +438,16 @@
         }
         .lightbox .lb-caption {
             position: absolute;
-            bottom: 30px;
+            bottom: 40px;
             left: 0;
             right: 0;
             text-align: center;
-            color: #a0b8d0;
-            font-size: 1rem;
+            color: #b0c8e0;
+            font-size: 1.1rem;
             font-family: 'Segoe UI', sans-serif;
             padding: 0 20px;
             text-shadow: 0 0 20px #000;
+            letter-spacing: 0.5px;
         }
 
         /* ===== ADMIN ===== */
@@ -517,6 +528,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-wrap: wrap;
         }
         .admin-form .file-field input[type="file"] {
             background: transparent;
@@ -524,10 +536,11 @@
             padding: 8px 0;
             color: #a0b8d0;
             font-family: 'Segoe UI', sans-serif;
+            flex: 1;
         }
         .admin-form .file-field .preview-img {
-            width: 60px;
-            height: 60px;
+            width: 70px;
+            height: 70px;
             border-radius: 12px;
             object-fit: cover;
             background: #0f1322;
@@ -584,8 +597,8 @@
             font-size: 0.65rem;
         }
         .admin-list .list-item .thumb {
-            width: 50px;
-            height: 50px;
+            width: 55px;
+            height: 55px;
             border-radius: 12px;
             object-fit: cover;
             background: #0f1322;
@@ -735,17 +748,27 @@
                 flex-direction: column;
                 align-items: stretch;
             }
+            .catalog-grid {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
             .card-img-wrapper {
-                height: 200px;
+                height: 220px;
             }
             .lightbox img {
-                max-width: 95%;
-                max-height: 70vh;
+                max-width: 96%;
+                max-height: 65vh;
             }
             .lightbox .close-lightbox {
-                top: 12px;
+                top: 15px;
                 right: 20px;
-                font-size: 2.2rem;
+                font-size: 2.4rem;
+            }
+            .card-title {
+                font-size: 1rem;
+            }
+            .card-price {
+                font-size: 1.3rem;
             }
         }
 
@@ -758,6 +781,9 @@
         }
         .mt-20 {
             margin-top: 20px;
+        }
+        .mb-10 {
+            margin-bottom: 10px;
         }
     </style>
 </head>
@@ -944,10 +970,11 @@
         }
 
         function getSampleProducts() {
-            const sampleImg1 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiMwZjEzMjIiLz48dGV4dCB4PSI1MCIgeT0iMTEwIiBmb250LWZhbWlseT0iT3JiaXRyb24iIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiMyYTMhNWEiPlBhbmVsPC90ZXh0Pjwvc3ZnPg==';
-            const sampleImg2 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiMwZjEzMjIiLz48dGV4dCB4PSI1MCIgeT0iMTEwIiBmb250LWZhbWlseT0iT3JiaXRyb24iIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiMyYTMhNWEiPkludmVyc29yPC90ZXh0Pjwvc3ZnPg==';
-            const sampleImg3 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiMwZjEzMjIiLz48dGV4dCB4PSI1MCIgeT0iMTEwIiBmb250LWZhbWlseT0iT3JiaXRyb24iIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiMyYTMhNWEiPkJhdGVyw61hPC90ZXh0Pjwvc3ZnPg==';
-            const sampleImg4 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiB2aWV3Qm94PSIwIDAgMjAwIDIwMCI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiMwZjEzMjIiLz48dGV4dCB4PSI1MCIgeT0iMTEwIiBmb250LWZhbWlseT0iT3JiaXRyb24iIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiMyYTMhNWEiPkNhYmxlPC90ZXh0Pjwvc3ZnPg==';
+            // Imágenes de muestra (SVG base64) más representativas
+            const sampleImg1 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgNjAwIDQwMCI+PHJlY3Qgd2lkdGg9IjYwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiMwZjEzMjIiLz48dGV4dCB4PSIxNTAiIHk9IjIwMCIgZm9udC1mYW1pbHk9Ik9yYml0cm9uIiBmb250LXNpemU9IjQwIiBmaWxsPSIjMDBkNGZmIj5QQU5FTDwvdGV4dD48L3N2Zz4=';
+            const sampleImg2 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgNjAwIDQwMCI+PHJlY3Qgd2lkdGg9IjYwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiMwZjEzMjIiLz48dGV4dCB4PSIxMDAiIHk9IjIwMCIgZm9udC1mYW1pbHk9Ik9yYml0cm9uIiBmb250LXNpemU9IjQwIiBmaWxsPSIjYThiNWY3Ij5JTlZFUlNPUjwvdGV4dD48L3N2Zz4=';
+            const sampleImg3 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgNjAwIDQwMCI+PHJlY3Qgd2lkdGg9IjYwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiMwZjEzMjIiLz48dGV4dCB4PSIxMjAiIHk9IjIwMCIgZm9udC1mYW1pbHk9Ik9yYml0cm9uIiBmb250LXNpemU9IjQwIiBmaWxsPSIjMzlmZjE0Ij5CQVRFUklBPC90ZXh0Pjwvc3ZnPg==';
+            const sampleImg4 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgNjAwIDQwMCI+PHJlY3Qgd2lkdGg9IjYwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiMwZjEzMjIiLz48dGV4dCB4PSIxMjAiIHk9IjIwMCIgZm9udC1mYW1pbHk9Ik9yYml0cm9uIiBmb250LXNpemU9IjQwIiBmaWxsPSIjZmYzYjVjIj5DQUJMRTwvdGV4dD48L3N2Zz4=';
             return [{
                 id: '1',
                 name: 'Panel Solar 550W',
@@ -1088,7 +1115,6 @@
             document.body.style.overflow = '';
         }
 
-        // Cerrar con tecla ESC
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 closeLightbox();
@@ -1159,10 +1185,9 @@
                     img.alt = p.name;
                     img.loading = 'lazy';
                     imgWrapper.appendChild(img);
-                    // Al hacer clic en el wrapper se abre el lightbox
                     imgWrapper.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        openLightbox(p.image, p.name + ' - ' + (p.category || ''));
+                        openLightbox(p.image, p.name + ' · ' + (p.category || ''));
                     });
                 } else {
                     const placeholder = document.createElement('div');
@@ -1190,7 +1215,6 @@
                     </div>
                 `;
 
-                // Insertar el wrapper de imagen al principio de la tarjeta
                 card.prepend(imgWrapper);
                 grid.appendChild(card);
             });
@@ -1452,16 +1476,14 @@
             closeCartModal();
         }
 
-        // Cerrar modal de carrito al hacer clic fuera
         document.getElementById('cartModal').addEventListener('click', function(e) {
             if (e.target === this) closeCartModal();
         });
 
-        console.log('⚡ NeoSolar Catálogo Futurista con imágenes más altas y lightbox');
+        console.log('⚡ NeoSolar · Catálogo con imágenes grandes y ajustadas');
         console.log('📦 Productos:', products.length);
         console.log('📱 Teléfono:', getPhoneNumber() || '(no configurado)');
         console.log('🔍 Haz clic en cualquier imagen para ampliarla.');
     </script>
-
 </body>
     </html>
