@@ -779,6 +779,23 @@
         .mt-20 {
             margin-top: 20px;
         }
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 60px 0;
+            gap: 15px;
+            color: #00d4ff;
+            font-size: 1.2rem;
+        }
+        .loading-spinner i {
+            font-size: 2.5rem;
+            animation: spin 1.2s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -810,7 +827,13 @@
                 <span class="text-muted" id="productCount">0 productos</span>
             </div>
         </div>
-        <div id="catalogGrid" class="catalog-grid"></div>
+        <div id="catalogGrid" class="catalog-grid">
+            <!-- Spinner de carga -->
+            <div class="loading-spinner" id="loadingSpinner">
+                <i class="fas fa-sync-alt"></i>
+                <span>Cargando catálogo desde GitHub...</span>
+            </div>
+        </div>
         <div id="emptyCatalog" class="text-center text-muted mt-20" style="display:none; padding:40px;">
             <i class="fas fa-box-open" style="font-size:3rem; opacity:0.3;"></i>
             <p style="margin-top:10px;">No hay productos en esta categoría.</p>
@@ -895,7 +918,7 @@
                 </div>
                 <div class="io-group">
                     <label><i class="fas fa-file-import"></i> Importar desde URL</label>
-                    <input type="text" id="importUrl" placeholder="URL del JSON (ej: raw de GitHub)">
+                    <input type="text" id="importUrl" placeholder="URL del JSON (ej: raw de GitHub)" value="https://raw.githubusercontent.com/costanorta-sys/neosolar/refs/heads/main/neosolar_catalog.json">
                     <button class="btn-neon admin" onclick="importFromURL()"><i class="fas fa-upload"></i> Cargar</button>
                 </div>
                 <div class="io-group">
@@ -934,6 +957,11 @@
 
     <script>
         // ============================================================
+        //  CONFIGURACIÓN
+        // ============================================================
+        const DEFAULT_JSON_URL = 'https://raw.githubusercontent.com/costanorta-sys/neosolar/refs/heads/main/neosolar_catalog.json';
+
+        // ============================================================
         //  DATOS Y ALMACENAMIENTO
         // ============================================================
         let products = [];
@@ -941,31 +969,112 @@
         let cartProductId = null;
         let tempImageBase64 = '';
         let currentCategoryFilter = 'all';
+        let isLoading = false;
 
         const STORAGE_KEY = 'neosolar_products';
         const PHONE_KEY = 'neosolar_phone';
 
         // ============================================================
-        //  INICIALIZACIÓN
+        //  CARGA AUTOMÁTICA DESDE GITHUB (SIEMPRE)
         // ============================================================
-        function loadData() {
-            const stored = localStorage.getItem(STORAGE_KEY);
-            if (stored) {
-                products = JSON.parse(stored);
-            } else {
+        async function loadDataFromGitHub(showLoading = true) {
+            if (isLoading) return;
+            isLoading = true;
+
+            const spinner = document.getElementById('loadingSpinner');
+            const grid = document.getElementById('catalogGrid');
+            if (showLoading) {
+                grid.innerHTML = `
+                    <div class="loading-spinner" id="loadingSpinner">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Cargando catálogo desde GitHub...</span>
+                    </div>
+                `;
+            }
+
+            try {
+                const response = await fetch(DEFAULT_JSON_URL);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                if (Array.isArray(data) && data.length > 0) {
+                    products = data;
+                    saveToStorage();
+                    console.log('✅ Datos cargados desde GitHub:', products.length, 'productos');
+                    return true;
+                } else {
+                    console.warn('⚠️ El JSON de GitHub está vacío o no es válido.');
+                    // Intentar cargar desde localStorage como respaldo
+                    const stored = localStorage.getItem(STORAGE_KEY);
+                    if (stored) {
+                        try {
+                            const parsed = JSON.parse(stored);
+                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                products = parsed;
+                                console.log('📦 Usando datos de localStorage como respaldo.');
+                                return true;
+                            }
+                        } catch (e) {}
+                    }
+                    // Si no hay respaldo, usar datos de ejemplo
+                    products = getSampleProducts();
+                    saveToStorage();
+                    console.log('📦 Usando datos de ejemplo por fallo en GitHub.');
+                    return true;
+                }
+            } catch (error) {
+                console.error('❌ Error al cargar desde GitHub:', error);
+                // Fallback a localStorage o ejemplo
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                    try {
+                        const parsed = JSON.parse(stored);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            products = parsed;
+                            console.log('📦 Usando datos de localStorage tras error de red.');
+                            return true;
+                        }
+                    } catch (e) {}
+                }
                 products = getSampleProducts();
                 saveToStorage();
+                console.log('📦 Usando datos de ejemplo tras error de red.');
+                return true;
+            } finally {
+                isLoading = false;
+                // Actualizar la interfaz
+                populateCategoryFilter();
+                applyFilter();
+                renderAdminList();
+                // Ocultar spinner si existe
+                const spinnerEl = document.getElementById('loadingSpinner');
+                if (spinnerEl) spinnerEl.remove();
             }
+        }
+
+        // ============================================================
+        //  INICIALIZACIÓN
+        // ============================================================
+        async function initialize() {
+            // Cargar teléfono
             const phone = localStorage.getItem(PHONE_KEY) || '';
             document.getElementById('phoneInput').value = phone;
             updatePhoneStatus();
-            // Actualizar filtro y catálogo
+
+            // Configurar campo de importación con URL por defecto
+            document.getElementById('importUrl').value = DEFAULT_JSON_URL;
+
+            // Cargar datos siempre desde GitHub (con spinner)
+            await loadDataFromGitHub(true);
+
+            // Asegurar renderizado final
             populateCategoryFilter();
             applyFilter();
+            renderAdminList();
         }
 
         function getSampleProducts() {
-            // Imágenes de ejemplo variadas
             const sampleImg1 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iNTAwIiB2aWV3Qm94PSIwIDAgODAwIDUwMCI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI1MDAiIGZpbGw9IiMwYjBlMWEiLz48cmVjdCB4PSI1MCIgeT0iNzAiIHdpZHRoPSI3MDAiIGhlaWdodD0iMzUwIiBmaWxsPSIjMDA3N2ZmIiByeD0iMjAiLz48dGV4dCB4PSIyMDAiIHk9IjI4MCIgZm9udC1mYW1pbHk9Ik9yYml0cm9uIiBmb250LXNpemU9IjUwIiBmaWxsPSIjZmZmIj5QQSBORUwgU09MQVI8L3RleHQ+PC9zdmc+';
             const sampleImg2 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iNjAwIiB2aWV3Qm94PSIwIDAgNjAwIDYwMCI+PHJlY3Qgd2lkdGg9IjYwMCIgaGVpZ2h0PSI2MDAiIGZpbGw9IiMwYjBlMWEiLz48Y2lyY2xlIGN4PSIzMDAiIGN5PSIzMDAiIHI9IjIwMCIgZmlsbD0iI2E4NTVmNyIvPjx0ZXh0IHg9IjE4MCIgeT0iMzIwIiBmb250LWZhbWlseT0iT3JiaXRyb24iIGZvbnQtc2l6ZT0iNDAiIGZpbGw9IiNmZmYiPklOVkVSU09SPC90ZXh0Pjwvc3ZnPg==';
             const sampleImg3 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNzAwIiB2aWV3Qm94PSIwIDAgNDAwIDcwMCI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI3MDAiIGZpbGw9IiMwYjBlMWEiLz48cmVjdCB4PSI1MCIgeT0iMTAwIiB3aWR0aD0iMzAwIiBoZWlnaHQ9IjUwMCIgZmlsbD0iIzM5ZmYxNCIgcng9IjEwIi8+PHRleHQgeD0iODAiIHk9IjM4MCIgZm9udC1mYW1pbHk9Ik9yYml0cm9uIiBmb250LXNpemU9IjQwIiBmaWxsPSIjMDAwIj5CQVRFUklBPC90ZXh0Pjwvc3ZnPg==';
@@ -1064,7 +1173,7 @@
         });
 
         window.addEventListener('DOMContentLoaded', () => {
-            loadData();
+            initialize();
             const hash = window.location.hash;
             if (hash === '#/admin') {
                 switchView('admin');
@@ -1118,7 +1227,7 @@
         });
 
         // ============================================================
-        //  CATÁLOGO Y FILTROS (CORREGIDO)
+        //  CATÁLOGO Y FILTROS
         // ============================================================
         function populateCategoryFilter() {
             const select = document.getElementById('categoryFilter');
@@ -1130,12 +1239,10 @@
                 opt.textContent = c;
                 select.appendChild(opt);
             });
-            // Si el filtro actual no existe en las nuevas categorías, resetear a 'all'
             if (currentCategoryFilter !== 'all' && !categories.has(currentCategoryFilter)) {
                 currentCategoryFilter = 'all';
                 select.value = 'all';
             } else {
-                // Mantener el valor actual si existe
                 if (currentCategoryFilter !== 'all' && categories.has(currentCategoryFilter)) {
                     select.value = currentCategoryFilter;
                 } else {
@@ -1217,7 +1324,7 @@
         }
 
         // ============================================================
-        //  ADMIN: LISTA Y CRUD (CORREGIDO)
+        //  ADMIN: LISTA Y CRUD
         // ============================================================
         function renderAdminList() {
             const container = document.getElementById('adminProductList');
@@ -1294,7 +1401,6 @@
 
             saveToStorage();
             clearForm();
-            // Actualizar filtro y catálogo
             populateCategoryFilter();
             applyFilter();
             renderAdminList();
@@ -1356,7 +1462,7 @@
         }
 
         // ============================================================
-        //  IMPORTAR / EXPORTAR JSON (CORREGIDO)
+        //  IMPORTAR / EXPORTAR JSON
         // ============================================================
         function exportJSON() {
             const dataStr = JSON.stringify(products, null, 2);
@@ -1477,7 +1583,7 @@
             if (e.target === this) closeCartModal();
         });
 
-        console.log('✅ NeoSolar · Corrección de categorías y visualización completa');
+        console.log('✅ NeoSolar · Carga automática desde GitHub (siempre)');
         console.log('📦 Productos totales:', products.length);
         console.log('📱 Teléfono:', getPhoneNumber() || '(no configurado)');
         console.log('🔍 Haz clic en cualquier imagen para ampliarla.');
