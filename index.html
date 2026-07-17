@@ -918,22 +918,6 @@
             font-size: 0.9rem;
             max-width: 400px;
         }
-
-        .speed-warning {
-            background: rgba(255, 180, 0, 0.15);
-            border: 1px solid #ffaa00;
-            border-radius: 20px;
-            padding: 10px 18px;
-            font-size: 0.8rem;
-            color: #ffaa00;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-        .speed-warning i {
-            font-size: 1.2rem;
-        }
     </style>
 </head>
 <body>
@@ -967,15 +951,10 @@
                 </span>
             </div>
         </div>
-        <!-- Aviso de velocidad lenta -->
-        <div class="speed-warning" id="speedWarning" style="display:none;">
-            <i class="fas fa-exclamation-triangle"></i>
-            <span>Tu conexión es lenta (~250 kbps). La sincronización puede tomar varios minutos. Por favor, espera.</span>
-        </div>
         <div id="catalogGrid" class="catalog-grid">
             <div class="loading-spinner" id="loadingSpinner">
                 <i class="fas fa-sync-alt"></i>
-                <span>Sincronizando catálogo...</span>
+                <span>Sincronizando catálogo (puede tomar varios minutos)...</span>
             </div>
         </div>
     </div>
@@ -1096,16 +1075,16 @@
 
     <script>
         // ============================================================
-        //  CONFIGURACIÓN PARA CONEXIÓN LENTA (250 kbps ≈ 31 KB/s)
+        //  CONFIGURACIÓN CON TIEMPOS MUY AMPLIOS
         // ============================================================
         const DEFAULT_JSON_URL = 'https://raw.githubusercontent.com/costanorta-sys/neosolar/refs/heads/main/neosolar_catalog.json';
         const DEFAULT_PHONE = '5358776771';
 
-        // Ajustes para 250 kbps
-        const MAX_RETRIES = 5; // Menos reintentos para no saturar
-        const REQUEST_TIMEOUT = 90000; // 90 segundos por intento
-        const BASE_DELAY = 5000; // 5 segundos iniciales
-        const MAX_DELAY = 45000; // 45 segundos máximo entre reintentos
+        // Tiempos extremadamente generosos para conexiones muy lentas o inestables
+        const MAX_RETRIES = 15;               // 15 intentos
+        const REQUEST_TIMEOUT = 180000;       // 3 minutos por intento
+        const BASE_DELAY = 10000;             // 10 segundos iniciales
+        const MAX_DELAY = 120000;             // 2 minutos máximo entre reintentos
 
         // ============================================================
         //  DATOS Y VARIABLES GLOBALES
@@ -1124,7 +1103,7 @@
         // ============================================================
         //  TOAST NOTIFICATIONS
         // ============================================================
-        function showToast(message, type = 'success', duration = 8000) {
+        function showToast(message, type = 'success', duration = 10000) {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
@@ -1265,12 +1244,12 @@
         }
 
         // ============================================================
-        //  CARGA CON REINTENTOS Y RETROCESO EXPONENCIAL
+        //  CARGA CON REINTENTOS Y RETROCESO EXPONENCIAL (TIEMPOS EXTREMOS)
         // ============================================================
         function getRetryDelay(attempt) {
-            // Factor 1.5 para crecimiento moderado, máx 45s
-            const exponential = Math.min(BASE_DELAY * Math.pow(1.5, attempt), MAX_DELAY);
-            const jitter = exponential * 0.2 * (Math.random() - 0.5);
+            // Factor 1.6, máx 120s
+            const exponential = Math.min(BASE_DELAY * Math.pow(1.6, attempt), MAX_DELAY);
+            const jitter = exponential * 0.25 * (Math.random() - 0.5);
             return Math.max(2000, exponential + jitter);
         }
 
@@ -1278,7 +1257,7 @@
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => {
-                    console.warn(`⏰ Timeout en intento ${attempt + 1} de ${MAX_RETRIES} (90s)`);
+                    console.warn(`⏰ Timeout en intento ${attempt + 1} de ${MAX_RETRIES} (${REQUEST_TIMEOUT/1000}s)`);
                     controller.abort();
                 }, REQUEST_TIMEOUT);
 
@@ -1304,7 +1283,7 @@
                 if (attempt < MAX_RETRIES - 1) {
                     const delay = getRetryDelay(attempt);
                     console.log(`🔄 Reintentando en ${Math.round(delay/1000)}s... (intento ${attempt + 1}/${MAX_RETRIES})`);
-                    showToast(`⏳ Reintentando conexión... (${attempt + 1}/${MAX_RETRIES})`, 'info', 3000);
+                    showToast(`⏳ Reintentando conexión... (${attempt + 1}/${MAX_RETRIES})`, 'info', 5000);
                     setSyncIndicator('loading', `Reintentando (${attempt + 1}/${MAX_RETRIES})...`);
                     await new Promise(resolve => setTimeout(resolve, delay));
                     return fetchWithRetry(url, attempt + 1);
@@ -1326,13 +1305,8 @@
             startTime = Date.now();
             setSyncIndicator('loading', 'Sincronizando...');
 
-            // Mostrar aviso de velocidad lenta si el tamaño del archivo es grande (estimado)
-            // Lo mostramos siempre porque la conexión es lenta
-            const speedWarning = document.getElementById('speedWarning');
-            speedWarning.style.display = 'flex';
-
             try {
-                console.log('🌐 Iniciando sincronización robusta para conexión lenta (250 kbps)');
+                console.log('🌐 Iniciando sincronización con tiempos amplios (máx 3min por intento)');
                 const data = await fetchWithRetry(DEFAULT_JSON_URL, 0);
 
                 if (!Array.isArray(data) || data.length === 0) {
@@ -1354,7 +1328,7 @@
                 if (saved) {
                     if (showToastMessage) {
                         const elapsed = Math.round((Date.now() - startTime) / 1000);
-                        showToast(`✅ Catálogo sincronizado: ${products.length} productos (${elapsed}s)`, 'success');
+                        showToast(`✅ Catálogo sincronizado: ${products.length} productos (${elapsed}s)`, 'success', 8000);
                     }
                     setSyncIndicator('success', `${products.length} productos`);
                     console.log('✅ Sincronización completada con éxito');
@@ -1369,7 +1343,7 @@
                 console.error('❌ Error en sincronización:', error);
 
                 if (error.name === 'AbortError') {
-                    showToast('⏰ La sincronización tomó demasiado tiempo (90s). Reintentando...', 'error');
+                    showToast('⏰ La sincronización tomó demasiado tiempo (3min). Reintentando...', 'error');
                     setTimeout(() => {
                         syncInProgress = false;
                         syncFromGitHub(true);
@@ -1395,8 +1369,6 @@
                 }
             } finally {
                 syncInProgress = false;
-                // Ocultar aviso de velocidad lenta si ya terminó
-                speedWarning.style.display = 'none';
                 // Renderizar siempre
                 populateCategoryFilter();
                 applyFilter();
@@ -1825,7 +1797,7 @@
             grid.innerHTML = `
                 <div class="loading-spinner" id="loadingSpinner">
                     <i class="fas fa-sync-alt"></i>
-                    <span>Importando desde URL (conexión lenta, puede tardar)...</span>
+                    <span>Importando desde URL (puede tardar)...</span>
                 </div>
             `;
 
@@ -1937,11 +1909,11 @@
             }
         }
 
-        console.log('✅ NeoSolar · Adaptado para conexiones lentas (250 kbps)');
+        console.log('✅ NeoSolar · Configuración con tiempos extremadamente amplios');
         console.log(`⏱️ Timeout por intento: ${REQUEST_TIMEOUT/1000}s, reintentos: ${MAX_RETRIES}`);
         console.log('📦 Productos cargados:', products.length);
         console.log('📱 Teléfono configurado:', getPhoneNumber());
-        console.log('🔄 Si ves un aviso de velocidad lenta, espera pacientemente.');
+        console.log('🔄 La sincronización puede tardar varios minutos. Por favor, espera.');
     </script>
 </body>
     </html>
