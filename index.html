@@ -946,6 +946,9 @@
             </div>
             <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                 <span class="text-muted" id="productCount">0 productos</span>
+                <button class="btn-neon" onclick="manualSync()" style="padding:6px 14px; font-size:0.7rem;">
+                    <i class="fas fa-sync-alt"></i> Actualizar ahora
+                </button>
                 <span id="syncIndicator" class="sync-indicator">
                     <i class="fas fa-circle"></i> Cargando...
                 </span>
@@ -954,7 +957,7 @@
         <div id="catalogGrid" class="catalog-grid">
             <div class="loading-spinner" id="loadingSpinner">
                 <i class="fas fa-sync-alt"></i>
-                <span>Sincronizando catálogo (puede tomar varios minutos)...</span>
+                <span>Sincronizando catálogo (puede tardar varios minutos)...</span>
             </div>
         </div>
     </div>
@@ -1075,16 +1078,15 @@
 
     <script>
         // ============================================================
-        //  CONFIGURACIÓN CON TIEMPOS MUY AMPLIOS
+        //  CONFIGURACIÓN
         // ============================================================
         const DEFAULT_JSON_URL = 'https://raw.githubusercontent.com/costanorta-sys/neosolar/refs/heads/main/neosolar_catalog.json';
         const DEFAULT_PHONE = '5358776771';
 
-        // Tiempos extremadamente generosos para conexiones muy lentas o inestables
-        const MAX_RETRIES = 15;               // 15 intentos
-        const REQUEST_TIMEOUT = 180000;       // 3 minutos por intento
-        const BASE_DELAY = 10000;             // 10 segundos iniciales
-        const MAX_DELAY = 120000;             // 2 minutos máximo entre reintentos
+        // Tiempos generosos pero sin exagerar (3 intentos, 60s timeout)
+        const MAX_RETRIES = 3;
+        const REQUEST_TIMEOUT = 60000; // 60 segundos por intento
+        const RETRY_DELAY = 5000; // 5 segundos entre reintentos
 
         // ============================================================
         //  DATOS Y VARIABLES GLOBALES
@@ -1095,15 +1097,13 @@
         let tempImageBase64 = '';
         let currentCategoryFilter = 'all';
         let syncInProgress = false;
-        let retryCount = 0;
-        let startTime = null;
 
         const PHONE_KEY = 'neosolar_phone';
 
         // ============================================================
         //  TOAST NOTIFICATIONS
         // ============================================================
-        function showToast(message, type = 'success', duration = 10000) {
+        function showToast(message, type = 'success', duration = 7000) {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
@@ -1220,13 +1220,15 @@
                 const data = await getAllProducts();
                 if (data && data.length > 0) {
                     products = data;
+                    console.log(`✅ Cargados ${products.length} productos desde IndexedDB`);
                     return true;
                 } else {
                     products = [];
+                    console.log('ℹ️ No hay productos en IndexedDB');
                     return false;
                 }
             } catch (error) {
-                console.error('Error cargando IndexedDB:', error);
+                console.error('❌ Error cargando IndexedDB:', error);
                 products = [];
                 return false;
             }
@@ -1235,65 +1237,17 @@
         async function saveProductsToDB(productsArray) {
             try {
                 await saveProducts(productsArray);
+                console.log(`✅ ${productsArray.length} productos guardados en IndexedDB`);
                 return true;
             } catch (error) {
-                console.error('Error guardando en IndexedDB:', error);
+                console.error('❌ Error guardando en IndexedDB:', error);
                 showToast('Error guardando en IndexedDB: ' + error.message, 'error');
                 return false;
             }
         }
 
         // ============================================================
-        //  CARGA CON REINTENTOS Y RETROCESO EXPONENCIAL (TIEMPOS EXTREMOS)
-        // ============================================================
-        function getRetryDelay(attempt) {
-            // Factor 1.6, máx 120s
-            const exponential = Math.min(BASE_DELAY * Math.pow(1.6, attempt), MAX_DELAY);
-            const jitter = exponential * 0.25 * (Math.random() - 0.5);
-            return Math.max(2000, exponential + jitter);
-        }
-
-        async function fetchWithRetry(url, attempt = 0) {
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => {
-                    console.warn(`⏰ Timeout en intento ${attempt + 1} de ${MAX_RETRIES} (${REQUEST_TIMEOUT/1000}s)`);
-                    controller.abort();
-                }, REQUEST_TIMEOUT);
-
-                console.log(`🌐 Intento ${attempt + 1}/${MAX_RETRIES} - ${url}`);
-                const response = await fetch(url, {
-                    signal: controller.signal,
-                    cache: 'no-cache',
-                    headers: {
-                        'Cache-Control': 'no-cache',
-                        'Pragma': 'no-cache',
-                        'Accept': 'application/json'
-                    }
-                });
-                clearTimeout(timeoutId);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-
-                const data = await response.json();
-                return data;
-            } catch (error) {
-                if (attempt < MAX_RETRIES - 1) {
-                    const delay = getRetryDelay(attempt);
-                    console.log(`🔄 Reintentando en ${Math.round(delay/1000)}s... (intento ${attempt + 1}/${MAX_RETRIES})`);
-                    showToast(`⏳ Reintentando conexión... (${attempt + 1}/${MAX_RETRIES})`, 'info', 5000);
-                    setSyncIndicator('loading', `Reintentando (${attempt + 1}/${MAX_RETRIES})...`);
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    return fetchWithRetry(url, attempt + 1);
-                }
-                throw error;
-            }
-        }
-
-        // ============================================================
-        //  SINCRONIZACIÓN PRINCIPAL
+        //  SINCRONIZACIÓN CON GITHUB (MEJORADA)
         // ============================================================
         async function syncFromGitHub(showToastMessage = true) {
             if (syncInProgress) {
@@ -1301,58 +1255,94 @@
                 return;
             }
             syncInProgress = true;
-            retryCount = 0;
-            startTime = Date.now();
             setSyncIndicator('loading', 'Sincronizando...');
 
-            try {
-                console.log('🌐 Iniciando sincronización con tiempos amplios (máx 3min por intento)');
-                const data = await fetchWithRetry(DEFAULT_JSON_URL, 0);
+            // Mostrar spinner si no hay productos
+            const grid = document.getElementById('catalogGrid');
+            if (!grid.querySelector('#loadingSpinner')) {
+                grid.innerHTML = `
+                    <div class="loading-spinner" id="loadingSpinner">
+                        <i class="fas fa-sync-alt"></i>
+                        <span>Sincronizando catálogo (puede tardar varios minutos)...</span>
+                    </div>
+                `;
+            }
 
-                if (!Array.isArray(data) || data.length === 0) {
-                    throw new Error('El JSON no contiene un array válido de productos');
-                }
+            let attempt = 0;
+            let success = false;
+            let lastError = null;
 
-                // Validar estructura mínima
-                const validProducts = data.filter(p =>
-                    p.id && p.name && typeof p.price === 'number'
-                );
+            while (attempt < MAX_RETRIES && !success) {
+                try {
+                    console.log(`🌐 Intento ${attempt + 1}/${MAX_RETRIES} - ${DEFAULT_JSON_URL}`);
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => {
+                        console.warn(`⏰ Timeout en intento ${attempt + 1} (${REQUEST_TIMEOUT/1000}s)`);
+                        controller.abort();
+                    }, REQUEST_TIMEOUT);
 
-                if (validProducts.length === 0) {
-                    throw new Error('No se encontraron productos válidos en el JSON');
-                }
+                    const response = await fetch(DEFAULT_JSON_URL, {
+                        signal: controller.signal,
+                        cache: 'no-cache',
+                        headers: {
+                            'Cache-Control': 'no-cache',
+                            'Pragma': 'no-cache',
+                            'Accept': 'application/json'
+                        }
+                    });
+                    clearTimeout(timeoutId);
 
-                products = validProducts;
-                const saved = await saveProductsToDB(products);
-
-                if (saved) {
-                    if (showToastMessage) {
-                        const elapsed = Math.round((Date.now() - startTime) / 1000);
-                        showToast(`✅ Catálogo sincronizado: ${products.length} productos (${elapsed}s)`, 'success', 8000);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                     }
-                    setSyncIndicator('success', `${products.length} productos`);
-                    console.log('✅ Sincronización completada con éxito');
-                } else {
-                    setSyncIndicator('error', 'Error al guardar');
-                    console.error('❌ Error al guardar en IndexedDB');
+
+                    const data = await response.json();
+                    console.log(`📦 Datos recibidos: ${data.length} productos`);
+
+                    if (!Array.isArray(data) || data.length === 0) {
+                        throw new Error('El JSON no contiene un array válido de productos');
+                    }
+
+                    // Validar estructura mínima
+                    const validProducts = data.filter(p =>
+                        p.id && p.name && typeof p.price === 'number'
+                    );
+
+                    if (validProducts.length === 0) {
+                        throw new Error('No se encontraron productos válidos en el JSON');
+                    }
+
+                    products = validProducts;
+                    const saved = await saveProductsToDB(products);
+                    if (saved) {
+                        success = true;
+                        if (showToastMessage) {
+                            showToast(`✅ Catálogo sincronizado: ${products.length} productos`, 'success');
+                        }
+                        setSyncIndicator('success', `${products.length} productos`);
+                        console.log('✅ Sincronización completada con éxito');
+                    } else {
+                        throw new Error('Error al guardar en IndexedDB');
+                    }
+
+                } catch (error) {
+                    lastError = error;
+                    console.error(`❌ Error en intento ${attempt + 1}:`, error);
+                    if (attempt < MAX_RETRIES - 1) {
+                        const delay = RETRY_DELAY * (attempt + 1);
+                        console.log(`🔄 Reintentando en ${delay/1000}s...`);
+                        showToast(`⏳ Reintentando conexión... (${attempt + 1}/${MAX_RETRIES})`, 'info', 3000);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                    }
                 }
+                attempt++;
+            }
 
-                retryCount = 0;
-
-            } catch (error) {
-                console.error('❌ Error en sincronización:', error);
-
-                if (error.name === 'AbortError') {
-                    showToast('⏰ La sincronización tomó demasiado tiempo (3min). Reintentando...', 'error');
-                    setTimeout(() => {
-                        syncInProgress = false;
-                        syncFromGitHub(true);
-                    }, 5000);
-                    return;
-                }
-
+            // Si no se pudo sincronizar
+            if (!success) {
+                console.error('❌ Todos los reintentos fallaron:', lastError);
                 if (showToastMessage) {
-                    showToast(`❌ Error al sincronizar: ${error.message}`, 'error');
+                    showToast(`❌ Error al sincronizar: ${lastError ? lastError.message : 'Conexión fallida'}`, 'error');
                 }
                 setSyncIndicator('error', 'Error de sincronización');
 
@@ -1367,17 +1357,28 @@
                     products = [];
                     setSyncIndicator('error', 'Sin datos');
                 }
-            } finally {
-                syncInProgress = false;
-                // Renderizar siempre
-                populateCategoryFilter();
-                applyFilter();
-                renderAdminList();
-
-                // Eliminar spinner
-                const spinner = document.getElementById('loadingSpinner');
-                if (spinner) spinner.remove();
             }
+
+            syncInProgress = false;
+            // Renderizar siempre
+            populateCategoryFilter();
+            applyFilter();
+            renderAdminList();
+
+            // Eliminar spinner
+            const spinner = document.getElementById('loadingSpinner');
+            if (spinner) spinner.remove();
+        }
+
+        // ============================================================
+        //  SINCRONIZACIÓN MANUAL (botón)
+        // ============================================================
+        async function manualSync() {
+            if (syncInProgress) {
+                showToast('Ya hay una sincronización en curso...', 'info');
+                return;
+            }
+            await syncFromGitHub(true);
         }
 
         // ============================================================
@@ -1536,7 +1537,7 @@
                     <div class="empty-state">
                         <i class="fas fa-box-open"></i>
                         <h3>No hay productos</h3>
-                        <p>El catálogo está vacío. Sincronizando con GitHub...</p>
+                        <p>El catálogo está vacío. Presiona "Actualizar ahora" para sincronizar con GitHub.</p>
                     </div>
                 `;
                 return;
@@ -1797,12 +1798,14 @@
             grid.innerHTML = `
                 <div class="loading-spinner" id="loadingSpinner">
                     <i class="fas fa-sync-alt"></i>
-                    <span>Importando desde URL (puede tardar)...</span>
+                    <span>Importando desde URL...</span>
                 </div>
             `;
 
             try {
-                const data = await fetchWithRetry(url, 0);
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Error al obtener el archivo');
+                const data = await response.json();
                 if (!Array.isArray(data)) throw new Error('El formato no es un array de productos');
                 products = data;
                 await saveProductsToDB(products);
@@ -1909,11 +1912,10 @@
             }
         }
 
-        console.log('✅ NeoSolar · Configuración con tiempos extremadamente amplios');
-        console.log(`⏱️ Timeout por intento: ${REQUEST_TIMEOUT/1000}s, reintentos: ${MAX_RETRIES}`);
+        console.log('✅ NeoSolar · Lógica de sincronización revisada y simplificada');
         console.log('📦 Productos cargados:', products.length);
         console.log('📱 Teléfono configurado:', getPhoneNumber());
-        console.log('🔄 La sincronización puede tardar varios minutos. Por favor, espera.');
+        console.log('🔘 Botón "Actualizar ahora" para forzar sincronización manual.');
     </script>
 </body>
     </html>
