@@ -251,14 +251,13 @@
             border-color: #00d4ff88;
         }
 
-        /* --- IMAGEN MEJORADA: cover + fondo oscuro --- */
         .card-img-wrapper {
             position: relative;
             width: 100%;
             height: 300px;
             border-radius: 20px;
             overflow: hidden;
-            background: #0a0d1a; /* fondo oscuro uniforme */
+            background: #0a0d1a;
             border: 1px solid rgba(255, 255, 255, 0.08);
             cursor: pointer;
             transition: 0.3s;
@@ -274,8 +273,8 @@
         .card-img-wrapper img {
             width: 100%;
             height: 100%;
-            object-fit: cover; /* ✅ cubre todo el espacio sin bordes */
-            background: #0a0d1a; /* mismo fondo para transparencias */
+            object-fit: cover;
+            background: #0a0d1a;
             transition: 0.3s;
         }
         .card-img-wrapper .img-placeholder {
@@ -283,7 +282,6 @@
             color: #2a3a5a;
             opacity: 0.5;
         }
-        /* overlay con lupa */
         .card-img-wrapper::after {
             content: '🔍';
             position: absolute;
@@ -406,7 +404,7 @@
         .lightbox img {
             max-width: 92%;
             max-height: 88vh;
-            object-fit: contain; /* en el lightbox queremos ver la imagen completa */
+            object-fit: contain;
             border-radius: 24px;
             box-shadow: 0 0 80px rgba(0, 212, 255, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -961,12 +959,13 @@
             const phone = localStorage.getItem(PHONE_KEY) || '';
             document.getElementById('phoneInput').value = phone;
             updatePhoneStatus();
+            // Actualizar filtro y catálogo
             populateCategoryFilter();
             applyFilter();
         }
 
         function getSampleProducts() {
-            // Imágenes de muestra más representativas (con colores y formas distintas)
+            // Imágenes de ejemplo variadas
             const sampleImg1 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iNTAwIiB2aWV3Qm94PSIwIDAgODAwIDUwMCI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI1MDAiIGZpbGw9IiMwYjBlMWEiLz48cmVjdCB4PSI1MCIgeT0iNzAiIHdpZHRoPSI3MDAiIGhlaWdodD0iMzUwIiBmaWxsPSIjMDA3N2ZmIiByeD0iMjAiLz48dGV4dCB4PSIyMDAiIHk9IjI4MCIgZm9udC1mYW1pbHk9Ik9yYml0cm9uIiBmb250LXNpemU9IjUwIiBmaWxsPSIjZmZmIj5QQSBORUwgU09MQVI8L3RleHQ+PC9zdmc+';
             const sampleImg2 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iNjAwIiB2aWV3Qm94PSIwIDAgNjAwIDYwMCI+PHJlY3Qgd2lkdGg9IjYwMCIgaGVpZ2h0PSI2MDAiIGZpbGw9IiMwYjBlMWEiLz48Y2lyY2xlIGN4PSIzMDAiIGN5PSIzMDAiIHI9IjIwMCIgZmlsbD0iI2E4NTVmNyIvPjx0ZXh0IHg9IjE4MCIgeT0iMzIwIiBmb250LWZhbWlseT0iT3JiaXRyb24iIGZvbnQtc2l6ZT0iNDAiIGZpbGw9IiNmZmYiPklOVkVSU09SPC90ZXh0Pjwvc3ZnPg==';
             const sampleImg3 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNzAwIiB2aWV3Qm94PSIwIDAgNDAwIDcwMCI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI3MDAiIGZpbGw9IiMwYjBlMWEiLz48cmVjdCB4PSI1MCIgeT0iMTAwIiB3aWR0aD0iMzAwIiBoZWlnaHQ9IjUwMCIgZmlsbD0iIzM5ZmYxNCIgcng9IjEwIi8+PHRleHQgeD0iODAiIHk9IjM4MCIgZm9udC1mYW1pbHk9Ik9yYml0cm9uIiBmb250LXNpemU9IjQwIiBmaWxsPSIjMDAwIj5CQVRFUklBPC90ZXh0Pjwvc3ZnPg==';
@@ -1119,11 +1118,11 @@
         });
 
         // ============================================================
-        //  CATÁLOGO Y FILTROS
+        //  CATÁLOGO Y FILTROS (CORREGIDO)
         // ============================================================
         function populateCategoryFilter() {
             const select = document.getElementById('categoryFilter');
-            const categories = new Set(products.map(p => p.category).filter(c => c));
+            const categories = new Set(products.map(p => p.category).filter(c => c && c.trim() !== ''));
             select.innerHTML = '<option value="all">Todas</option>';
             categories.forEach(c => {
                 const opt = document.createElement('option');
@@ -1131,16 +1130,18 @@
                 opt.textContent = c;
                 select.appendChild(opt);
             });
-            if (currentCategoryFilter && currentCategoryFilter !== 'all') {
-                if (categories.has(currentCategoryFilter)) {
+            // Si el filtro actual no existe en las nuevas categorías, resetear a 'all'
+            if (currentCategoryFilter !== 'all' && !categories.has(currentCategoryFilter)) {
+                currentCategoryFilter = 'all';
+                select.value = 'all';
+            } else {
+                // Mantener el valor actual si existe
+                if (currentCategoryFilter !== 'all' && categories.has(currentCategoryFilter)) {
                     select.value = currentCategoryFilter;
                 } else {
                     select.value = 'all';
                     currentCategoryFilter = 'all';
                 }
-            } else {
-                select.value = 'all';
-                currentCategoryFilter = 'all';
             }
         }
 
@@ -1216,7 +1217,7 @@
         }
 
         // ============================================================
-        //  ADMIN: LISTA Y CRUD
+        //  ADMIN: LISTA Y CRUD (CORREGIDO)
         // ============================================================
         function renderAdminList() {
             const container = document.getElementById('adminProductList');
@@ -1293,9 +1294,10 @@
 
             saveToStorage();
             clearForm();
-            renderAdminList();
+            // Actualizar filtro y catálogo
             populateCategoryFilter();
             applyFilter();
+            renderAdminList();
         }
 
         function editProduct(id) {
@@ -1354,7 +1356,7 @@
         }
 
         // ============================================================
-        //  IMPORTAR / EXPORTAR JSON
+        //  IMPORTAR / EXPORTAR JSON (CORREGIDO)
         // ============================================================
         function exportJSON() {
             const dataStr = JSON.stringify(products, null, 2);
@@ -1475,8 +1477,8 @@
             if (e.target === this) closeCartModal();
         });
 
-        console.log('⚡ NeoSolar · Imágenes mejoradas con ajuste cover');
-        console.log('📦 Productos:', products.length);
+        console.log('✅ NeoSolar · Corrección de categorías y visualización completa');
+        console.log('📦 Productos totales:', products.length);
         console.log('📱 Teléfono:', getPhoneNumber() || '(no configurado)');
         console.log('🔍 Haz clic en cualquier imagen para ampliarla.');
     </script>
