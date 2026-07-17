@@ -918,6 +918,22 @@
             font-size: 0.9rem;
             max-width: 400px;
         }
+
+        .speed-warning {
+            background: rgba(255, 180, 0, 0.15);
+            border: 1px solid #ffaa00;
+            border-radius: 20px;
+            padding: 10px 18px;
+            font-size: 0.8rem;
+            color: #ffaa00;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .speed-warning i {
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <body>
@@ -950,6 +966,11 @@
                     <i class="fas fa-circle"></i> Cargando...
                 </span>
             </div>
+        </div>
+        <!-- Aviso de velocidad lenta -->
+        <div class="speed-warning" id="speedWarning" style="display:none;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>Tu conexión es lenta (~250 kbps). La sincronización puede tomar varios minutos. Por favor, espera.</span>
         </div>
         <div id="catalogGrid" class="catalog-grid">
             <div class="loading-spinner" id="loadingSpinner">
@@ -1075,13 +1096,16 @@
 
     <script>
         // ============================================================
-        //  CONFIGURACIÓN
+        //  CONFIGURACIÓN PARA CONEXIÓN LENTA (250 kbps ≈ 31 KB/s)
         // ============================================================
         const DEFAULT_JSON_URL = 'https://raw.githubusercontent.com/costanorta-sys/neosolar/refs/heads/main/neosolar_catalog.json';
         const DEFAULT_PHONE = '5358776771';
-        const MAX_RETRIES = 5;
-        const BASE_DELAY = 2000; // 2 segundos iniciales
-        const MAX_DELAY = 30000; // 30 segundos máximo
+
+        // Ajustes para 250 kbps
+        const MAX_RETRIES = 5; // Menos reintentos para no saturar
+        const REQUEST_TIMEOUT = 90000; // 90 segundos por intento
+        const BASE_DELAY = 5000; // 5 segundos iniciales
+        const MAX_DELAY = 45000; // 45 segundos máximo entre reintentos
 
         // ============================================================
         //  DATOS Y VARIABLES GLOBALES
@@ -1093,13 +1117,14 @@
         let currentCategoryFilter = 'all';
         let syncInProgress = false;
         let retryCount = 0;
+        let startTime = null;
 
         const PHONE_KEY = 'neosolar_phone';
 
         // ============================================================
         //  TOAST NOTIFICATIONS
         // ============================================================
-        function showToast(message, type = 'success', duration = 5000) {
+        function showToast(message, type = 'success', duration = 8000) {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
@@ -1240,23 +1265,24 @@
         }
 
         // ============================================================
-        //  CARGA ROBUSTA DESDE GITHUB CON REINTENTOS
+        //  CARGA CON REINTENTOS Y RETROCESO EXPONENCIAL
         // ============================================================
         function getRetryDelay(attempt) {
-            // Retroceso exponencial con jitter
+            // Factor 1.5 para crecimiento moderado, máx 45s
             const exponential = Math.min(BASE_DELAY * Math.pow(1.5, attempt), MAX_DELAY);
             const jitter = exponential * 0.2 * (Math.random() - 0.5);
-            return Math.max(1000, exponential + jitter);
+            return Math.max(2000, exponential + jitter);
         }
 
         async function fetchWithRetry(url, attempt = 0) {
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => {
-                    console.warn(`⏰ Timeout en intento ${attempt + 1}`);
+                    console.warn(`⏰ Timeout en intento ${attempt + 1} de ${MAX_RETRIES} (90s)`);
                     controller.abort();
-                }, 30000);
+                }, REQUEST_TIMEOUT);
 
+                console.log(`🌐 Intento ${attempt + 1}/${MAX_RETRIES} - ${url}`);
                 const response = await fetch(url, {
                     signal: controller.signal,
                     cache: 'no-cache',
@@ -1279,6 +1305,7 @@
                     const delay = getRetryDelay(attempt);
                     console.log(`🔄 Reintentando en ${Math.round(delay/1000)}s... (intento ${attempt + 1}/${MAX_RETRIES})`);
                     showToast(`⏳ Reintentando conexión... (${attempt + 1}/${MAX_RETRIES})`, 'info', 3000);
+                    setSyncIndicator('loading', `Reintentando (${attempt + 1}/${MAX_RETRIES})...`);
                     await new Promise(resolve => setTimeout(resolve, delay));
                     return fetchWithRetry(url, attempt + 1);
                 }
@@ -1286,6 +1313,9 @@
             }
         }
 
+        // ============================================================
+        //  SINCRONIZACIÓN PRINCIPAL
+        // ============================================================
         async function syncFromGitHub(showToastMessage = true) {
             if (syncInProgress) {
                 console.log('⏳ Sincronización ya en progreso...');
@@ -1293,17 +1323,23 @@
             }
             syncInProgress = true;
             retryCount = 0;
+            startTime = Date.now();
             setSyncIndicator('loading', 'Sincronizando...');
 
+            // Mostrar aviso de velocidad lenta si el tamaño del archivo es grande (estimado)
+            // Lo mostramos siempre porque la conexión es lenta
+            const speedWarning = document.getElementById('speedWarning');
+            speedWarning.style.display = 'flex';
+
             try {
-                console.log('🌐 Iniciando sincronización robusta desde:', DEFAULT_JSON_URL);
+                console.log('🌐 Iniciando sincronización robusta para conexión lenta (250 kbps)');
                 const data = await fetchWithRetry(DEFAULT_JSON_URL, 0);
 
                 if (!Array.isArray(data) || data.length === 0) {
                     throw new Error('El JSON no contiene un array válido de productos');
                 }
 
-                // Validar estructura mínima de los productos
+                // Validar estructura mínima
                 const validProducts = data.filter(p =>
                     p.id && p.name && typeof p.price === 'number'
                 );
@@ -1317,7 +1353,8 @@
 
                 if (saved) {
                     if (showToastMessage) {
-                        showToast(`✅ Catálogo sincronizado: ${products.length} productos`, 'success');
+                        const elapsed = Math.round((Date.now() - startTime) / 1000);
+                        showToast(`✅ Catálogo sincronizado: ${products.length} productos (${elapsed}s)`, 'success');
                     }
                     setSyncIndicator('success', `${products.length} productos`);
                     console.log('✅ Sincronización completada con éxito');
@@ -1332,7 +1369,7 @@
                 console.error('❌ Error en sincronización:', error);
 
                 if (error.name === 'AbortError') {
-                    showToast('⏰ La sincronización tomó demasiado tiempo. Reintentando...', 'error');
+                    showToast('⏰ La sincronización tomó demasiado tiempo (90s). Reintentando...', 'error');
                     setTimeout(() => {
                         syncInProgress = false;
                         syncFromGitHub(true);
@@ -1358,6 +1395,8 @@
                 }
             } finally {
                 syncInProgress = false;
+                // Ocultar aviso de velocidad lenta si ya terminó
+                speedWarning.style.display = 'none';
                 // Renderizar siempre
                 populateCategoryFilter();
                 applyFilter();
@@ -1786,7 +1825,7 @@
             grid.innerHTML = `
                 <div class="loading-spinner" id="loadingSpinner">
                     <i class="fas fa-sync-alt"></i>
-                    <span>Importando desde URL...</span>
+                    <span>Importando desde URL (conexión lenta, puede tardar)...</span>
                 </div>
             `;
 
@@ -1898,10 +1937,11 @@
             }
         }
 
-        console.log('✅ NeoSolar · Sistema de sincronización robusta activado');
+        console.log('✅ NeoSolar · Adaptado para conexiones lentas (250 kbps)');
+        console.log(`⏱️ Timeout por intento: ${REQUEST_TIMEOUT/1000}s, reintentos: ${MAX_RETRIES}`);
         console.log('📦 Productos cargados:', products.length);
         console.log('📱 Teléfono configurado:', getPhoneNumber());
-        console.log('🔄 Hasta 5 reintentos con retroceso exponencial si falla la conexión.');
+        console.log('🔄 Si ves un aviso de velocidad lenta, espera pacientemente.');
     </script>
 </body>
     </html>
