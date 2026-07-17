@@ -206,7 +206,7 @@
             padding: 10px 0;
         }
 
-        /* ===== TARJETAS MEJORADAS ===== */
+        /* ===== TARJETAS ===== */
         .card {
             background: rgba(12, 18, 38, 0.8);
             backdrop-filter: blur(12px);
@@ -251,14 +251,14 @@
             border-color: #00d4ff88;
         }
 
-        /* --- IMAGEN GRANDE Y BIEN AJUSTADA --- */
+        /* --- IMAGEN MEJORADA: cover + fondo oscuro --- */
         .card-img-wrapper {
             position: relative;
             width: 100%;
-            height: 300px; /* ⬆️ altura considerablemente mayor */
+            height: 300px;
             border-radius: 20px;
             overflow: hidden;
-            background: #0a0d1a;
+            background: #0a0d1a; /* fondo oscuro uniforme */
             border: 1px solid rgba(255, 255, 255, 0.08);
             cursor: pointer;
             transition: 0.3s;
@@ -268,15 +268,14 @@
             margin-bottom: 10px;
         }
         .card-img-wrapper:hover {
-            filter: brightness(1.08);
+            filter: brightness(1.05);
             border-color: #00d4ff66;
         }
         .card-img-wrapper img {
             width: 100%;
             height: 100%;
-            object-fit: contain; /* ⬅️ imagen completa sin recortes */
-            background: #0a0d1a;
-            padding: 6px;
+            object-fit: cover; /* ✅ cubre todo el espacio sin bordes */
+            background: #0a0d1a; /* mismo fondo para transparencias */
             transition: 0.3s;
         }
         .card-img-wrapper .img-placeholder {
@@ -284,7 +283,7 @@
             color: #2a3a5a;
             opacity: 0.5;
         }
-        /* overlay sutil al pasar el mouse */
+        /* overlay con lupa */
         .card-img-wrapper::after {
             content: '🔍';
             position: absolute;
@@ -295,7 +294,7 @@
             transition: 0.3s;
             text-shadow: 0 0 20px #000;
             pointer-events: none;
-            background: rgba(0,0,0,0.4);
+            background: rgba(0,0,0,0.5);
             border-radius: 50%;
             padding: 6px 10px;
             line-height: 1;
@@ -381,7 +380,7 @@
             box-shadow: none !important;
         }
 
-        /* ===== LIGHTBOX MEJORADO ===== */
+        /* ===== LIGHTBOX ===== */
         .lightbox {
             position: fixed;
             top: 0;
@@ -407,7 +406,7 @@
         .lightbox img {
             max-width: 92%;
             max-height: 88vh;
-            object-fit: contain;
+            object-fit: contain; /* en el lightbox queremos ver la imagen completa */
             border-radius: 24px;
             box-shadow: 0 0 80px rgba(0, 212, 255, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -782,9 +781,6 @@
         .mt-20 {
             margin-top: 20px;
         }
-        .mb-10 {
-            margin-bottom: 10px;
-        }
     </style>
 </head>
 <body>
@@ -970,11 +966,11 @@
         }
 
         function getSampleProducts() {
-            // Imágenes de muestra (SVG base64) más representativas
-            const sampleImg1 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgNjAwIDQwMCI+PHJlY3Qgd2lkdGg9IjYwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiMwZjEzMjIiLz48dGV4dCB4PSIxNTAiIHk9IjIwMCIgZm9udC1mYW1pbHk9Ik9yYml0cm9uIiBmb250LXNpemU9IjQwIiBmaWxsPSIjMDBkNGZmIj5QQU5FTDwvdGV4dD48L3N2Zz4=';
-            const sampleImg2 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgNjAwIDQwMCI+PHJlY3Qgd2lkdGg9IjYwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiMwZjEzMjIiLz48dGV4dCB4PSIxMDAiIHk9IjIwMCIgZm9udC1mYW1pbHk9Ik9yYml0cm9uIiBmb250LXNpemU9IjQwIiBmaWxsPSIjYThiNWY3Ij5JTlZFUlNPUjwvdGV4dD48L3N2Zz4=';
-            const sampleImg3 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgNjAwIDQwMCI+PHJlY3Qgd2lkdGg9IjYwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiMwZjEzMjIiLz48dGV4dCB4PSIxMjAiIHk9IjIwMCIgZm9udC1mYW1pbHk9Ik9yYml0cm9uIiBmb250LXNpemU9IjQwIiBmaWxsPSIjMzlmZjE0Ij5CQVRFUklBPC90ZXh0Pjwvc3ZnPg==';
-            const sampleImg4 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgNjAwIDQwMCI+PHJlY3Qgd2lkdGg9IjYwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiMwZjEzMjIiLz48dGV4dCB4PSIxMjAiIHk9IjIwMCIgZm9udC1mYW1pbHk9Ik9yYml0cm9uIiBmb250LXNpemU9IjQwIiBmaWxsPSIjZmYzYjVjIj5DQUJMRTwvdGV4dD48L3N2Zz4=';
+            // Imágenes de muestra más representativas (con colores y formas distintas)
+            const sampleImg1 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iNTAwIiB2aWV3Qm94PSIwIDAgODAwIDUwMCI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI1MDAiIGZpbGw9IiMwYjBlMWEiLz48cmVjdCB4PSI1MCIgeT0iNzAiIHdpZHRoPSI3MDAiIGhlaWdodD0iMzUwIiBmaWxsPSIjMDA3N2ZmIiByeD0iMjAiLz48dGV4dCB4PSIyMDAiIHk9IjI4MCIgZm9udC1mYW1pbHk9Ik9yYml0cm9uIiBmb250LXNpemU9IjUwIiBmaWxsPSIjZmZmIj5QQSBORUwgU09MQVI8L3RleHQ+PC9zdmc+';
+            const sampleImg2 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iNjAwIiB2aWV3Qm94PSIwIDAgNjAwIDYwMCI+PHJlY3Qgd2lkdGg9IjYwMCIgaGVpZ2h0PSI2MDAiIGZpbGw9IiMwYjBlMWEiLz48Y2lyY2xlIGN4PSIzMDAiIGN5PSIzMDAiIHI9IjIwMCIgZmlsbD0iI2E4NTVmNyIvPjx0ZXh0IHg9IjE4MCIgeT0iMzIwIiBmb250LWZhbWlseT0iT3JiaXRyb24iIGZvbnQtc2l6ZT0iNDAiIGZpbGw9IiNmZmYiPklOVkVSU09SPC90ZXh0Pjwvc3ZnPg==';
+            const sampleImg3 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNzAwIiB2aWV3Qm94PSIwIDAgNDAwIDcwMCI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI3MDAiIGZpbGw9IiMwYjBlMWEiLz48cmVjdCB4PSI1MCIgeT0iMTAwIiB3aWR0aD0iMzAwIiBoZWlnaHQ9IjUwMCIgZmlsbD0iIzM5ZmYxNCIgcng9IjEwIi8+PHRleHQgeD0iODAiIHk9IjM4MCIgZm9udC1mYW1pbHk9Ik9yYml0cm9uIiBmb250LXNpemU9IjQwIiBmaWxsPSIjMDAwIj5CQVRFUklBPC90ZXh0Pjwvc3ZnPg==';
+            const sampleImg4 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5MDAiIGhlaWdodD0iMjUwIiB2aWV3Qm94PSIwIDAgOTAwIDI1MCI+PHJlY3Qgd2lkdGg9IjkwMCIgaGVpZ2h0PSIyNTAiIGZpbGw9IiMwYjBlMWEiLz48cmVjdCB4PSIyMCIgeT0iMjAiIHdpZHRoPSI4NjAiIGhlaWdodD0iMjEwIiBmaWxsPSIjZmYzYjVjIiByeD0iMTUiLz48dGV4dCB4PSIyMDAiIHk9IjE0MCIgZm9udC1mYW1pbHk9Ik9yYml0cm9uIiBmb250LXNpemU9IjUwIiBmaWxsPSIjZmZmIj5DQUJMRSBTT0xBUjwvdGV4dD48L3N2Zz4=';
             return [{
                 id: '1',
                 name: 'Panel Solar 550W',
@@ -1176,7 +1172,6 @@
                 const card = document.createElement('div');
                 card.className = 'card';
 
-                // Wrapper de imagen con click para lightbox
                 const imgWrapper = document.createElement('div');
                 imgWrapper.className = 'card-img-wrapper';
                 if (p.image && p.image.startsWith('data:')) {
@@ -1480,7 +1475,7 @@
             if (e.target === this) closeCartModal();
         });
 
-        console.log('⚡ NeoSolar · Catálogo con imágenes grandes y ajustadas');
+        console.log('⚡ NeoSolar · Imágenes mejoradas con ajuste cover');
         console.log('📦 Productos:', products.length);
         console.log('📱 Teléfono:', getPhoneNumber() || '(no configurado)');
         console.log('🔍 Haz clic en cualquier imagen para ampliarla.');
