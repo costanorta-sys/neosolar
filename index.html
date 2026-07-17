@@ -204,6 +204,7 @@
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 35px;
             padding: 10px 0;
+            min-height: 300px;
         }
 
         /* ===== TARJETAS ===== */
@@ -850,12 +851,14 @@
         }
         .loading-spinner {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             padding: 60px 0;
             gap: 15px;
             color: #00d4ff;
             font-size: 1.2rem;
+            grid-column: 1 / -1;
         }
         .loading-spinner i {
             font-size: 2.5rem;
@@ -864,6 +867,56 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        .sync-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.7rem;
+            color: #88aacc;
+            background: rgba(0,0,0,0.3);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .sync-indicator .fa-sync-alt {
+            font-size: 0.8rem;
+        }
+        .sync-indicator .fa-sync-alt.spinning {
+            animation: spin 1s linear infinite;
+        }
+        .sync-indicator.success {
+            color: #39ff14;
+            border-color: #39ff1444;
+        }
+        .sync-indicator.error {
+            color: #ff3b5c;
+            border-color: #ff3b5c44;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            gap: 15px;
+            color: #88aacc;
+            grid-column: 1 / -1;
+            text-align: center;
+        }
+        .empty-state i {
+            font-size: 4rem;
+            opacity: 0.3;
+        }
+        .empty-state h3 {
+            font-size: 1.2rem;
+            color: #b0c8e0;
+        }
+        .empty-state p {
+            font-size: 0.9rem;
+            max-width: 400px;
         }
     </style>
 </head>
@@ -879,7 +932,6 @@
             <button class="btn-neon" id="btnCatalog" onclick="switchView('catalog')">
                 <i class="fas fa-th"></i> Catálogo
             </button>
-            <!-- Admin oculto en menú, solo por URL -->
         </div>
     </header>
 
@@ -892,23 +944,21 @@
                     <option value="all">Todas</option>
                 </select>
             </div>
-            <div style="display:flex; gap:10px; align-items:center;">
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                 <span class="text-muted" id="productCount">0 productos</span>
                 <button class="btn-neon" onclick="refreshFromGitHub()" style="padding:6px 14px; font-size:0.7rem;">
                     <i class="fas fa-sync-alt"></i> Actualizar
                 </button>
+                <span id="syncIndicator" class="sync-indicator">
+                    <i class="fas fa-circle"></i> Cargando...
+                </span>
             </div>
         </div>
         <div id="catalogGrid" class="catalog-grid">
-            <!-- Spinner de carga -->
             <div class="loading-spinner" id="loadingSpinner">
                 <i class="fas fa-sync-alt"></i>
                 <span>Cargando catálogo desde GitHub...</span>
             </div>
-        </div>
-        <div id="emptyCatalog" class="text-center text-muted mt-20" style="display:none; padding:40px;">
-            <i class="fas fa-box-open" style="font-size:3rem; opacity:0.3;"></i>
-            <p style="margin-top:10px;">No hay productos en esta categoría.</p>
         </div>
     </div>
 
@@ -923,7 +973,7 @@
                     <label style="font-size:0.8rem; color:#a0b8d0; letter-spacing:1px;">
                         <i class="fab fa-whatsapp" style="color:#25D366;"></i> NÚMERO WHATSAPP (código país, sin +):
                     </label>
-                    <input type="text" id="phoneInput" placeholder="ej: 521234567890" style="flex:1; min-width:200px; background:#0b0e1a; border:1px solid #2a3a5a; border-radius:16px; padding:12px 18px; color:#e0f0ff; font-family:'Segoe UI',sans-serif; outline:none;">
+                    <input type="text" id="phoneInput" placeholder="ej: 5358776771" style="flex:1; min-width:200px; background:#0b0e1a; border:1px solid #2a3a5a; border-radius:16px; padding:12px 18px; color:#e0f0ff; font-family:'Segoe UI',sans-serif; outline:none;">
                     <button class="btn-neon success" onclick="savePhoneNumber()"><i class="fas fa-save"></i> Guardar</button>
                     <span id="phoneStatus" style="font-size:0.75rem; color:#39ff14; margin-left:5px;"></span>
                 </div>
@@ -993,10 +1043,6 @@
                     <input type="text" id="importUrl" placeholder="URL del JSON (ej: raw de GitHub)" value="https://raw.githubusercontent.com/costanorta-sys/neosolar/refs/heads/main/neosolar_catalog.json">
                     <button class="btn-neon admin" onclick="importFromURL()"><i class="fas fa-upload"></i> Cargar</button>
                 </div>
-                <div class="io-group">
-                    <label><i class="fas fa-sync-alt"></i> Reemplazar con datos de ejemplo</label>
-                    <button class="btn-neon" onclick="loadSampleData()"><i class="fas fa-undo"></i> Restaurar</button>
-                </div>
             </div>
         </div>
     </div>
@@ -1035,6 +1081,7 @@
         //  CONFIGURACIÓN
         // ============================================================
         const DEFAULT_JSON_URL = 'https://raw.githubusercontent.com/costanorta-sys/neosolar/refs/heads/main/neosolar_catalog.json';
+        const DEFAULT_PHONE = '5358776771';
 
         // ============================================================
         //  DATOS Y ALMACENAMIENTO
@@ -1044,7 +1091,6 @@
         let cartProductId = null;
         let tempImageBase64 = '';
         let currentCategoryFilter = 'all';
-        let isLoading = false;
 
         const STORAGE_KEY = 'neosolar_products';
         const PHONE_KEY = 'neosolar_phone';
@@ -1063,7 +1109,6 @@
                 <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
             `;
             container.appendChild(toast);
-            // Auto-remover después de duración
             setTimeout(() => {
                 if (toast.parentElement) {
                     toast.classList.add('hide');
@@ -1073,15 +1118,31 @@
         }
 
         // ============================================================
-        //  CARGA DESDE GITHUB CON FEEDBACK
+        //  INDICADOR DE SINCRONIZACIÓN
         // ============================================================
-        async function loadDataFromGitHub(showLoading = true) {
-            if (isLoading) return;
-            isLoading = true;
+        function setSyncIndicator(status, message) {
+            const el = document.getElementById('syncIndicator');
+            el.className = 'sync-indicator';
+            if (status === 'loading') {
+                el.innerHTML = `<i class="fas fa-sync-alt spinning"></i> ${message || 'Cargando...'}`;
+            } else if (status === 'success') {
+                el.className = 'sync-indicator success';
+                el.innerHTML = `<i class="fas fa-check-circle"></i> ${message || 'Sincronizado'}`;
+            } else if (status === 'error') {
+                el.className = 'sync-indicator error';
+                el.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message || 'Error de sincronización'}`;
+            } else {
+                el.innerHTML = `<i class="fas fa-circle"></i> Esperando...`;
+            }
+        }
 
+        // ============================================================
+        //  CARGA DESDE GITHUB (RÁPIDA, SIN DATOS DE EJEMPLO)
+        // ============================================================
+        async function loadFromGitHub() {
             const grid = document.getElementById('catalogGrid');
-            // Mostrar spinner solo si no hay productos actuales
-            if (showLoading && (!products || products.length === 0)) {
+            const spinner = document.getElementById('loadingSpinner');
+            if (!spinner) {
                 grid.innerHTML = `
                     <div class="loading-spinner" id="loadingSpinner">
                         <i class="fas fa-sync-alt"></i>
@@ -1089,155 +1150,74 @@
                     </div>
                 `;
             }
+            setSyncIndicator('loading', 'Cargando...');
 
             try {
-                // Intento de carga con timeout de 5 segundos
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                const timeoutId = setTimeout(() => controller.abort(), 4000);
 
                 const response = await fetch(DEFAULT_JSON_URL, {
                     signal: controller.signal,
-                    cache: 'no-store' // Evita caché
+                    cache: 'no-cache',
+                    headers: { 'Cache-Control': 'no-cache' }
                 });
                 clearTimeout(timeoutId);
 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-                const data = await response.json();
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-                if (Array.isArray(data) && data.length > 0) {
+                const data = await response.json();
+                if (Array.isArray(data)) {
                     products = data;
                     saveToStorage();
                     console.log('✅ Datos cargados desde GitHub:', products.length, 'productos');
-                    showToast(`Catálogo actualizado con ${products.length} productos desde GitHub`, 'success');
-                    return true;
+                    showToast(`Catálogo actualizado con ${products.length} productos`, 'success');
+                    setSyncIndicator('success', `${products.length} productos`);
                 } else {
-                    console.warn('⚠️ JSON vacío o inválido');
-                    showToast('El archivo JSON está vacío, usando datos locales', 'error');
-                    // Usar localStorage como respaldo
-                    const stored = localStorage.getItem(STORAGE_KEY);
-                    if (stored) {
-                        try {
-                            const parsed = JSON.parse(stored);
-                            if (Array.isArray(parsed) && parsed.length > 0) {
-                                products = parsed;
-                                console.log('📦 Usando datos de localStorage como respaldo.');
-                                return true;
-                            }
-                        } catch (e) {}
-                    }
-                    products = getSampleProducts();
-                    saveToStorage();
-                    return true;
+                    throw new Error('Formato inválido');
                 }
             } catch (error) {
-                console.error('❌ Error al cargar desde GitHub:', error);
-                if (error.name === 'AbortError') {
-                    showToast('La carga desde GitHub tomó demasiado tiempo, usando datos locales', 'error');
-                } else {
-                    showToast('Error al conectar con GitHub, usando datos locales', 'error');
-                }
-                // Fallback a localStorage o ejemplo
+                console.error('❌ Error cargando desde GitHub:', error);
+                // Intentar cargar desde localStorage como respaldo
                 const stored = localStorage.getItem(STORAGE_KEY);
                 if (stored) {
                     try {
                         const parsed = JSON.parse(stored);
                         if (Array.isArray(parsed) && parsed.length > 0) {
                             products = parsed;
-                            console.log('📦 Usando datos de localStorage tras error.');
-                            return true;
+                            console.log('📦 Usando datos de localStorage como respaldo.');
+                            showToast('Usando datos guardados localmente (falló la sincronización)', 'error');
+                            setSyncIndicator('error', 'Usando caché local');
+                            // Renderizar con los datos locales
+                            populateCategoryFilter();
+                            applyFilter();
+                            renderAdminList();
+                            // Eliminar spinner
+                            const spinnerEl = document.getElementById('loadingSpinner');
+                            if (spinnerEl) spinnerEl.remove();
+                            return;
                         }
                     } catch (e) {}
                 }
-                products = getSampleProducts();
+                // Si no hay respaldo, mostrar vacío
+                products = [];
                 saveToStorage();
-                return true;
-            } finally {
-                isLoading = false;
-                // Actualizar interfaz siempre
+                showToast('No se pudieron cargar los datos. Verifica la conexión.', 'error');
+                setSyncIndicator('error', 'Error de conexión');
+                // Renderizar vacío
                 populateCategoryFilter();
                 applyFilter();
                 renderAdminList();
-                // Eliminar spinner si existe
-                const spinner = document.getElementById('loadingSpinner');
-                if (spinner) spinner.remove();
+                const spinnerEl = document.getElementById('loadingSpinner');
+                if (spinnerEl) spinnerEl.remove();
+                return;
             }
-        }
 
-        // Función pública para refrescar manualmente
-        async function refreshFromGitHub() {
-            await loadDataFromGitHub(true);
-        }
-
-        // ============================================================
-        //  INICIALIZACIÓN
-        // ============================================================
-        async function initialize() {
-            // Cargar teléfono
-            const phone = localStorage.getItem(PHONE_KEY) || '';
-            document.getElementById('phoneInput').value = phone;
-            updatePhoneStatus();
-
-            // Configurar campo de importación
-            document.getElementById('importUrl').value = DEFAULT_JSON_URL;
-
-            // Cargar datos siempre desde GitHub (con spinner)
-            await loadDataFromGitHub(true);
-
-            // Asegurar renderizado final
+            // Éxito: renderizar
             populateCategoryFilter();
             applyFilter();
             renderAdminList();
-
-            // Mostrar notificación de bienvenida
-            setTimeout(() => {
-                showToast('🔄 Datos sincronizados desde GitHub', 'success', 3000);
-            }, 500);
-        }
-
-        function getSampleProducts() {
-            const sampleImg1 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iNTAwIiB2aWV3Qm94PSIwIDAgODAwIDUwMCI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI1MDAiIGZpbGw9IiMwYjBlMWEiLz48cmVjdCB4PSI1MCIgeT0iNzAiIHdpZHRoPSI3MDAiIGhlaWdodD0iMzUwIiBmaWxsPSIjMDA3N2ZmIiByeD0iMjAiLz48dGV4dCB4PSIyMDAiIHk9IjI4MCIgZm9udC1mYW1pbHk9Ik9yYml0cm9uIiBmb250LXNpemU9IjUwIiBmaWxsPSIjZmZmIj5QQSBORUwgU09MQVI8L3RleHQ+PC9zdmc+';
-            const sampleImg2 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iNjAwIiB2aWV3Qm94PSIwIDAgNjAwIDYwMCI+PHJlY3Qgd2lkdGg9IjYwMCIgaGVpZ2h0PSI2MDAiIGZpbGw9IiMwYjBlMWEiLz48Y2lyY2xlIGN4PSIzMDAiIGN5PSIzMDAiIHI9IjIwMCIgZmlsbD0iI2E4NTVmNyIvPjx0ZXh0IHg9IjE4MCIgeT0iMzIwIiBmb250LWZhbWlseT0iT3JiaXRyb24iIGZvbnQtc2l6ZT0iNDAiIGZpbGw9IiNmZmYiPklOVkVSU09SPC90ZXh0Pjwvc3ZnPg==';
-            const sampleImg3 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNzAwIiB2aWV3Qm94PSIwIDAgNDAwIDcwMCI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI3MDAiIGZpbGw9IiMwYjBlMWEiLz48cmVjdCB4PSI1MCIgeT0iMTAwIiB3aWR0aD0iMzAwIiBoZWlnaHQ9IjUwMCIgZmlsbD0iIzM5ZmYxNCIgcng9IjEwIi8+PHRleHQgeD0iODAiIHk9IjM4MCIgZm9udC1mYW1pbHk9Ik9yYml0cm9uIiBmb250LXNpemU9IjQwIiBmaWxsPSIjMDAwIj5CQVRFUklBPC90ZXh0Pjwvc3ZnPg==';
-            const sampleImg4 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5MDAiIGhlaWdodD0iMjUwIiB2aWV3Qm94PSIwIDAgOTAwIDI1MCI+PHJlY3Qgd2lkdGg9IjkwMCIgaGVpZ2h0PSIyNTAiIGZpbGw9IiMwYjBlMWEiLz48cmVjdCB4PSIyMCIgeT0iMjAiIHdpZHRoPSI4NjAiIGhlaWdodD0iMjEwIiBmaWxsPSIjZmYzYjVjIiByeD0iMTUiLz48dGV4dCB4PSIyMDAiIHk9IjE0MCIgZm9udC1mYW1pbHk9Ik9yYml0cm9uIiBmb250LXNpemU9IjUwIiBmaWxsPSIjZmZmIj5DQUJMRSBTT0xBUjwvdGV4dD48L3N2Zz4=';
-            return [{
-                id: '1',
-                name: 'Panel Solar 550W',
-                category: 'Paneles',
-                image: sampleImg1,
-                description: 'Panel monocristalino de alto rendimiento, eficiencia 21.5%. Ideal para instalaciones residenciales.',
-                price: 189.00,
-                stock: 12,
-                available: true
-            }, {
-                id: '2',
-                name: 'Inversor Híbrido 5kW',
-                category: 'Inversores',
-                image: sampleImg2,
-                description: 'Inversor solar híbrido MPPT, compatible con baterías de litio. Pantalla LCD y monitorización WiFi.',
-                price: 799.00,
-                stock: 5,
-                available: true
-            }, {
-                id: '3',
-                name: 'Batería Litio 10kWh',
-                category: 'Baterías',
-                image: sampleImg3,
-                description: 'Batería de litio-ferrofosfato (LiFePO4) con BMS integrado. Ciclo de vida >6000 ciclos.',
-                price: 2450.00,
-                stock: 3,
-                available: true
-            }, {
-                id: '4',
-                name: 'Cable Solar 6mm² (100m)',
-                category: 'Accesorios',
-                image: sampleImg4,
-                description: 'Cable solar doble aislamiento, resistente a UV y alta temperatura. Incluye conectores MC4.',
-                price: 89.50,
-                stock: 0,
-                available: false
-            }];
+            const spinnerEl = document.getElementById('loadingSpinner');
+            if (spinnerEl) spinnerEl.remove();
         }
 
         function saveToStorage() {
@@ -1245,7 +1225,14 @@
         }
 
         // ============================================================
-        //  TELÉFONO
+        //  REFRESCAR MANUAL
+        // ============================================================
+        async function refreshFromGitHub() {
+            await loadFromGitHub();
+        }
+
+        // ============================================================
+        //  TELÉFONO (por defecto 5358776771)
         // ============================================================
         function savePhoneNumber() {
             const val = document.getElementById('phoneInput').value.trim();
@@ -1255,7 +1242,7 @@
         }
 
         function updatePhoneStatus() {
-            const phone = localStorage.getItem(PHONE_KEY) || '';
+            const phone = localStorage.getItem(PHONE_KEY) || DEFAULT_PHONE;
             const status = document.getElementById('phoneStatus');
             if (phone) {
                 status.innerHTML = `<i class="fas fa-check-circle"></i> Configurado: +${phone}`;
@@ -1267,7 +1254,33 @@
         }
 
         function getPhoneNumber() {
-            return localStorage.getItem(PHONE_KEY) || '';
+            return localStorage.getItem(PHONE_KEY) || DEFAULT_PHONE;
+        }
+
+        // ============================================================
+        //  INICIALIZACIÓN
+        // ============================================================
+        async function initialize() {
+            // Configurar teléfono por defecto
+            document.getElementById('phoneInput').value = DEFAULT_PHONE;
+            if (!localStorage.getItem(PHONE_KEY)) {
+                localStorage.setItem(PHONE_KEY, DEFAULT_PHONE);
+            }
+            updatePhoneStatus();
+
+            // Configurar URL de importación
+            document.getElementById('importUrl').value = DEFAULT_JSON_URL;
+
+            // Cargar datos desde GitHub (si falla, usará localStorage o vacío)
+            await loadFromGitHub();
+
+            // Manejar hash para admin
+            const hash = window.location.hash;
+            if (hash === '#/admin') {
+                switchView('admin');
+            } else {
+                switchView('catalog');
+            }
         }
 
         // ============================================================
@@ -1297,12 +1310,6 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             initialize();
-            const hash = window.location.hash;
-            if (hash === '#/admin') {
-                switchView('admin');
-            } else {
-                switchView('catalog');
-            }
             document.getElementById('prodImageFile').addEventListener('change', handleFileSelect);
         });
 
@@ -1362,16 +1369,12 @@
                 opt.textContent = c;
                 select.appendChild(opt);
             });
-            if (currentCategoryFilter !== 'all' && !categories.has(currentCategoryFilter)) {
-                currentCategoryFilter = 'all';
-                select.value = 'all';
+            // Mantener filtro actual si existe
+            if (currentCategoryFilter !== 'all' && categories.has(currentCategoryFilter)) {
+                select.value = currentCategoryFilter;
             } else {
-                if (currentCategoryFilter !== 'all' && categories.has(currentCategoryFilter)) {
-                    select.value = currentCategoryFilter;
-                } else {
-                    select.value = 'all';
-                    currentCategoryFilter = 'all';
-                }
+                select.value = 'all';
+                currentCategoryFilter = 'all';
             }
         }
 
@@ -1383,8 +1386,14 @@
 
         function renderCatalog() {
             const grid = document.getElementById('catalogGrid');
-            const empty = document.getElementById('emptyCatalog');
-            grid.innerHTML = '';
+            // Limpiar solo si no hay spinner
+            const spinner = document.getElementById('loadingSpinner');
+            if (!spinner) {
+                grid.innerHTML = '';
+            } else {
+                // Si hay spinner, no borrar
+                return;
+            }
 
             let filtered = products;
             if (currentCategoryFilter !== 'all') {
@@ -1392,11 +1401,16 @@
             }
 
             if (filtered.length === 0) {
-                empty.style.display = 'block';
                 document.getElementById('productCount').textContent = '0 productos';
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-box-open"></i>
+                        <h3>No hay productos</h3>
+                        <p>El catálogo está vacío. Agrega productos desde el panel de administración o sincroniza con GitHub.</p>
+                    </div>
+                `;
                 return;
             }
-            empty.style.display = 'none';
             document.getElementById('productCount').textContent = filtered.length + ' productos';
 
             filtered.forEach(p => {
@@ -1629,17 +1643,6 @@
                 });
         }
 
-        function loadSampleData() {
-            if (!confirm('Restaurar datos de ejemplo (se perderán los cambios no guardados). ¿Continuar?')) return;
-            products = getSampleProducts();
-            saveToStorage();
-            clearForm();
-            renderAdminList();
-            populateCategoryFilter();
-            applyFilter();
-            showToast('Datos de ejemplo restaurados', 'success');
-        }
-
         // ============================================================
         //  CARRITO (MODAL)
         // ============================================================
@@ -1678,7 +1681,7 @@
         function confirmCart() {
             const phone = getPhoneNumber();
             if (!phone) {
-                alert('Primero configura tu número de teléfono en el panel de administración.');
+                alert('Configura tu número de teléfono en el panel de administración.');
                 return;
             }
             const p = products.find(prod => prod.id === cartProductId);
@@ -1711,11 +1714,10 @@
             if (e.target === this) closeCartModal();
         });
 
-        console.log('✅ NeoSolar · Sincronización rápida y con feedback visual');
+        console.log('✅ NeoSolar · Sin datos de ejemplo, carga rápida desde GitHub');
         console.log('📦 Productos totales:', products.length);
-        console.log('📱 Teléfono:', getPhoneNumber() || '(no configurado)');
-        console.log('🔍 Haz clic en cualquier imagen para ampliarla.');
-        console.log('🔄 Botón "Actualizar" para forzar recarga desde GitHub.');
+        console.log('📱 Teléfono configurado:', getPhoneNumber());
+        console.log('🔄 La página carga directamente desde GitHub.');
     </script>
 </body>
     </html>
