@@ -1079,6 +1079,9 @@
         // ============================================================
         const DEFAULT_JSON_URL = 'https://raw.githubusercontent.com/costanorta-sys/neosolar/refs/heads/main/neosolar_catalog.json';
         const DEFAULT_PHONE = '5358776771';
+        const MAX_RETRIES = 5;
+        const BASE_DELAY = 2000; // 2 segundos iniciales
+        const MAX_DELAY = 30000; // 30 segundos máximo
 
         // ============================================================
         //  DATOS Y VARIABLES GLOBALES
@@ -1088,6 +1091,8 @@
         let cartProductId = null;
         let tempImageBase64 = '';
         let currentCategoryFilter = 'all';
+        let syncInProgress = false;
+        let retryCount = 0;
 
         const PHONE_KEY = 'neosolar_phone';
 
@@ -1235,19 +1240,31 @@
         }
 
         // ============================================================
-        //  CARGA AUTOMÁTICA DESDE GITHUB
+        //  CARGA ROBUSTA DESDE GITHUB CON REINTENTOS
         // ============================================================
-        async function syncFromGitHub(showToastMessage = true) {
-            setSyncIndicator('loading', 'Sincronizando...');
+        function getRetryDelay(attempt) {
+            // Retroceso exponencial con jitter
+            const exponential = Math.min(BASE_DELAY * Math.pow(1.5, attempt), MAX_DELAY);
+            const jitter = exponential * 0.2 * (Math.random() - 0.5);
+            return Math.max(1000, exponential + jitter);
+        }
 
+        async function fetchWithRetry(url, attempt = 0) {
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000);
+                const timeoutId = setTimeout(() => {
+                    console.warn(`⏰ Timeout en intento ${attempt + 1}`);
+                    controller.abort();
+                }, 30000);
 
-                const response = await fetch(DEFAULT_JSON_URL, {
+                const response = await fetch(url, {
                     signal: controller.signal,
                     cache: 'no-cache',
-                    headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache',
+                        'Accept': 'application/json'
+                    }
                 });
                 clearTimeout(timeoutId);
 
@@ -1256,23 +1273,73 @@
                 }
 
                 const data = await response.json();
+                return data;
+            } catch (error) {
+                if (attempt < MAX_RETRIES - 1) {
+                    const delay = getRetryDelay(attempt);
+                    console.log(`🔄 Reintentando en ${Math.round(delay/1000)}s... (intento ${attempt + 1}/${MAX_RETRIES})`);
+                    showToast(`⏳ Reintentando conexión... (${attempt + 1}/${MAX_RETRIES})`, 'info', 3000);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return fetchWithRetry(url, attempt + 1);
+                }
+                throw error;
+            }
+        }
 
-                if (Array.isArray(data) && data.length > 0) {
-                    products = data;
-                    const saved = await saveProductsToDB(products);
-                    if (saved) {
-                        if (showToastMessage) {
-                            showToast(`✅ Catálogo sincronizado: ${products.length} productos`, 'success');
-                        }
-                        setSyncIndicator('success', `${products.length} productos`);
-                    } else {
-                        setSyncIndicator('error', 'Error al guardar');
-                    }
-                } else {
+        async function syncFromGitHub(showToastMessage = true) {
+            if (syncInProgress) {
+                console.log('⏳ Sincronización ya en progreso...');
+                return;
+            }
+            syncInProgress = true;
+            retryCount = 0;
+            setSyncIndicator('loading', 'Sincronizando...');
+
+            try {
+                console.log('🌐 Iniciando sincronización robusta desde:', DEFAULT_JSON_URL);
+                const data = await fetchWithRetry(DEFAULT_JSON_URL, 0);
+
+                if (!Array.isArray(data) || data.length === 0) {
                     throw new Error('El JSON no contiene un array válido de productos');
                 }
+
+                // Validar estructura mínima de los productos
+                const validProducts = data.filter(p =>
+                    p.id && p.name && typeof p.price === 'number'
+                );
+
+                if (validProducts.length === 0) {
+                    throw new Error('No se encontraron productos válidos en el JSON');
+                }
+
+                products = validProducts;
+                const saved = await saveProductsToDB(products);
+
+                if (saved) {
+                    if (showToastMessage) {
+                        showToast(`✅ Catálogo sincronizado: ${products.length} productos`, 'success');
+                    }
+                    setSyncIndicator('success', `${products.length} productos`);
+                    console.log('✅ Sincronización completada con éxito');
+                } else {
+                    setSyncIndicator('error', 'Error al guardar');
+                    console.error('❌ Error al guardar en IndexedDB');
+                }
+
+                retryCount = 0;
+
             } catch (error) {
-                console.error('Error en sincronización:', error);
+                console.error('❌ Error en sincronización:', error);
+
+                if (error.name === 'AbortError') {
+                    showToast('⏰ La sincronización tomó demasiado tiempo. Reintentando...', 'error');
+                    setTimeout(() => {
+                        syncInProgress = false;
+                        syncFromGitHub(true);
+                    }, 5000);
+                    return;
+                }
+
                 if (showToastMessage) {
                     showToast(`❌ Error al sincronizar: ${error.message}`, 'error');
                 }
@@ -1289,16 +1356,17 @@
                     products = [];
                     setSyncIndicator('error', 'Sin datos');
                 }
+            } finally {
+                syncInProgress = false;
+                // Renderizar siempre
+                populateCategoryFilter();
+                applyFilter();
+                renderAdminList();
+
+                // Eliminar spinner
+                const spinner = document.getElementById('loadingSpinner');
+                if (spinner) spinner.remove();
             }
-
-            // Renderizar siempre
-            populateCategoryFilter();
-            applyFilter();
-            renderAdminList();
-
-            // Eliminar spinner
-            const spinner = document.getElementById('loadingSpinner');
-            if (spinner) spinner.remove();
         }
 
         // ============================================================
@@ -1326,7 +1394,7 @@
                 // Sincronizar en segundo plano
                 setTimeout(() => {
                     syncFromGitHub(true);
-                }, 500);
+                }, 800);
             } else {
                 // No hay datos locales, sincronizar directamente
                 await syncFromGitHub(true);
@@ -1723,9 +1791,7 @@
             `;
 
             try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('Error al obtener el archivo');
-                const data = await response.json();
+                const data = await fetchWithRetry(url, 0);
                 if (!Array.isArray(data)) throw new Error('El formato no es un array de productos');
                 products = data;
                 await saveProductsToDB(products);
@@ -1832,10 +1898,10 @@
             }
         }
 
-        console.log('✅ NeoSolar · Sincronización automática con GitHub');
+        console.log('✅ NeoSolar · Sistema de sincronización robusta activado');
         console.log('📦 Productos cargados:', products.length);
         console.log('📱 Teléfono configurado:', getPhoneNumber());
-        console.log('🔄 La sincronización se realiza automáticamente al abrir la página.');
+        console.log('🔄 Hasta 5 reintentos con retroceso exponencial si falla la conexión.');
     </script>
 </body>
     </html>
