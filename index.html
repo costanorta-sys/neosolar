@@ -957,7 +957,7 @@
         <div id="catalogGrid" class="catalog-grid">
             <div class="loading-spinner" id="loadingSpinner">
                 <i class="fas fa-sync-alt"></i>
-                <span>Cargando catálogo desde GitHub...</span>
+                <span>Cargando catálogo desde IndexedDB...</span>
             </div>
         </div>
     </div>
@@ -1084,15 +1084,126 @@
         const DEFAULT_PHONE = '5358776771';
 
         // ============================================================
-        //  DATOS Y ALMACENAMIENTO
+        //  INDEXEDDB WRAPPER
+        // ============================================================
+        const DB_NAME = 'NeoSolarDB';
+        const STORE_NAME = 'products';
+        const DB_VERSION = 1;
+
+        let db = null;
+
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                if (db) {
+                    resolve(db);
+                    return;
+                }
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                        store.createIndex('category', 'category', { unique: false });
+                    }
+                };
+                request.onsuccess = (event) => {
+                    db = event.target.result;
+                    resolve(db);
+                };
+                request.onerror = (event) => {
+                    reject(event.target.error);
+                };
+            });
+        }
+
+        async function getAllProducts() {
+            const db = await openDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readonly');
+                const store = tx.objectStore(STORE_NAME);
+                const request = store.getAll();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function saveProducts(productsArray) {
+            const db = await openDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                // Limpiar todos los productos existentes
+                const clearRequest = store.clear();
+                clearRequest.onsuccess = () => {
+                    // Insertar todos los nuevos productos
+                    let inserted = 0;
+                    if (productsArray.length === 0) {
+                        resolve();
+                        return;
+                    }
+                    productsArray.forEach((product) => {
+                        const addRequest = store.add(product);
+                        addRequest.onsuccess = () => {
+                            inserted++;
+                            if (inserted === productsArray.length) {
+                                resolve();
+                            }
+                        };
+                        addRequest.onerror = (e) => {
+                            reject(e.target.error);
+                        };
+                    });
+                };
+                clearRequest.onerror = (e) => {
+                    reject(e.target.error);
+                };
+            });
+        }
+
+        async function addProduct(product) {
+            const db = await openDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                const request = store.add(product);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function updateProduct(product) {
+            const db = await openDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                const request = store.put(product);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function deleteProductById(id) {
+            const db = await openDB();
+            return new Promise((resolve, reject) => {
+                const tx = db.transaction(STORE_NAME, 'readwrite');
+                const store = tx.objectStore(STORE_NAME);
+                const request = store.delete(id);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // ============================================================
+        //  GESTIÓN DE DATOS (usando IndexedDB)
         // ============================================================
         let products = [];
         let editingId = null;
         let cartProductId = null;
         let tempImageBase64 = '';
         let currentCategoryFilter = 'all';
+        let isLoading = false;
 
-        const STORAGE_KEY = 'neosolar_products';
+        const STORAGE_KEY = 'neosolar_products'; // ya no usamos localStorage pero lo dejamos por compatibilidad
         const PHONE_KEY = 'neosolar_phone';
 
         // ============================================================
@@ -1118,52 +1229,44 @@
         }
 
         // ============================================================
-        //  GUARDAR EN LOCALSTORAGE CON MANEJO DE ERROR
+        //  CARGAR DATOS DESDE INDEXEDDB (local)
         // ============================================================
-        function saveToStorage() {
+        async function loadProductsFromDB() {
             try {
-                const data = JSON.stringify(products);
-                // Verificar tamaño aproximado (en MB)
-                const sizeMB = (data.length / 1024 / 1024);
-                if (sizeMB > 4) {
-                    console.warn('⚠️ Datos grandes (' + sizeMB.toFixed(2) + ' MB), puede exceder el límite de localStorage.');
-                }
-                localStorage.setItem(STORAGE_KEY, data);
-                return true;
-            } catch (error) {
-                if (error.name === 'QuotaExceededError' || error.message && error.message.includes('quota')) {
-                    console.error('❌ Error de cuota de localStorage:', error);
-                    showToast('⚠️ El almacenamiento local está lleno. Los datos no se guardarán permanentemente. Puedes exportar el JSON para respaldar.', 'error', 6000);
+                const data = await getAllProducts();
+                if (data && data.length > 0) {
+                    products = data;
+                    console.log('📦 Productos cargados desde IndexedDB:', products.length);
+                    return true;
+                } else {
+                    products = [];
+                    console.log('📦 No hay productos en IndexedDB.');
                     return false;
                 }
-                console.error('❌ Error guardando en localStorage:', error);
-                showToast('Error al guardar datos localmente: ' + error.message, 'error');
+            } catch (error) {
+                console.error('Error cargando desde IndexedDB:', error);
+                products = [];
                 return false;
             }
         }
 
         // ============================================================
-        //  CARGAR DESDE LOCALSTORAGE
+        //  GUARDAR PRODUCTOS EN INDEXEDDB
         // ============================================================
-        function loadFromStorage() {
+        async function saveProductsToDB(productsArray) {
             try {
-                const stored = localStorage.getItem(STORAGE_KEY);
-                if (stored) {
-                    const parsed = JSON.parse(stored);
-                    if (Array.isArray(parsed) && parsed.length > 0) {
-                        products = parsed;
-                        console.log('📦 Datos cargados desde localStorage:', products.length, 'productos');
-                        return true;
-                    }
-                }
+                await saveProducts(productsArray);
+                console.log('💾 Productos guardados en IndexedDB:', productsArray.length);
+                return true;
             } catch (error) {
-                console.error('Error cargando localStorage:', error);
+                console.error('Error guardando en IndexedDB:', error);
+                showToast('Error guardando en IndexedDB: ' + error.message, 'error');
+                return false;
             }
-            return false;
         }
 
         // ============================================================
-        //  CARGA DESDE GITHUB (CON MANEJO DE CUOTA)
+        //  CARGA DESDE GITHUB Y GUARDADO EN INDEXEDDB
         // ============================================================
         async function loadFromGitHub() {
             const grid = document.getElementById('catalogGrid');
@@ -1192,22 +1295,19 @@
                 const data = await response.json();
                 if (Array.isArray(data) && data.length > 0) {
                     products = data;
-                    // Intentar guardar en localStorage, pero si falla por cuota, solo usar en memoria
-                    const saved = saveToStorage();
-                    if (!saved) {
-                        showToast('⚠️ Los datos se cargaron pero no se guardaron localmente (espacio insuficiente). Se usarán en memoria.', 'error', 5000);
-                    } else {
-                        showToast(`✅ Catálogo actualizado con ${products.length} productos desde GitHub`, 'success');
-                    }
+                    // Guardar en IndexedDB
+                    await saveProductsToDB(products);
+                    showToast(`✅ Catálogo actualizado con ${products.length} productos desde GitHub`, 'success');
                     setSyncIndicator('success', `${products.length} productos`);
-                    console.log('✅ Datos cargados desde GitHub:', products.length, 'productos');
+                    console.log('✅ Datos cargados desde GitHub y guardados en IndexedDB:', products.length);
                 } else {
                     throw new Error('Formato inválido o vacío');
                 }
             } catch (error) {
                 console.error('❌ Error cargando desde GitHub:', error);
-                // Intentar cargar desde localStorage
-                if (loadFromStorage()) {
+                // Intentar cargar desde IndexedDB
+                const loaded = await loadProductsFromDB();
+                if (loaded) {
                     showToast('⚠️ Usando datos guardados localmente (falló la sincronización con GitHub)', 'error');
                     setSyncIndicator('error', 'Usando caché local');
                 } else {
@@ -1274,8 +1374,22 @@
             // Configurar URL de importación
             document.getElementById('importUrl').value = DEFAULT_JSON_URL;
 
-            // Cargar desde GitHub siempre
-            await loadFromGitHub();
+            // Intentar cargar desde IndexedDB primero (rápido)
+            const hasLocal = await loadProductsFromDB();
+            if (hasLocal) {
+                // Mostrar datos locales inmediatamente
+                populateCategoryFilter();
+                applyFilter();
+                renderAdminList();
+                setSyncIndicator('success', `${products.length} productos (caché)`);
+                // Luego sincronizar en segundo plano
+                setTimeout(() => {
+                    loadFromGitHub();
+                }, 300);
+            } else {
+                // No hay datos locales, cargar desde GitHub directamente
+                await loadFromGitHub();
+            }
 
             // Manejar hash para admin
             const hash = window.location.hash;
@@ -1458,7 +1572,7 @@
         }
 
         // ============================================================
-        //  ADMIN: LISTA Y CRUD
+        //  ADMIN: LISTA Y CRUD (usando IndexedDB)
         // ============================================================
         function renderAdminList() {
             const container = document.getElementById('adminProductList');
@@ -1492,7 +1606,7 @@
             });
         }
 
-        function saveProduct() {
+        async function saveProduct() {
             const name = document.getElementById('prodName').value.trim();
             const category = document.getElementById('prodCategory').value.trim();
             const description = document.getElementById('prodDesc').value.trim();
@@ -1511,32 +1625,41 @@
                 return;
             }
 
-            if (editId) {
-                const idx = products.findIndex(p => p.id === editId);
-                if (idx !== -1) {
-                    products[idx] = { ...products[idx], name, category, image, description, price, stock, available };
+            try {
+                if (editId) {
+                    // Actualizar
+                    const idx = products.findIndex(p => p.id === editId);
+                    if (idx !== -1) {
+                        const updated = { ...products[idx], name, category, image, description, price, stock, available };
+                        products[idx] = updated;
+                        await updateProduct(updated);
+                        showToast('Producto actualizado correctamente', 'success');
+                    }
+                    document.getElementById('editId').value = '';
+                    document.getElementById('formSaveBtn').innerHTML = '<i class="fas fa-plus-circle"></i> Agregar Producto';
+                    document.getElementById('formCancelBtn').style.display = 'none';
+                } else {
+                    // Agregar nuevo
+                    const newProduct = {
+                        id: Date.now().toString(36) + Math.random().toString(36).substr(2, 4),
+                        name,
+                        category,
+                        image: image || '',
+                        description,
+                        price,
+                        stock,
+                        available
+                    };
+                    products.push(newProduct);
+                    await addProduct(newProduct);
+                    showToast('Producto agregado correctamente', 'success');
                 }
-                document.getElementById('editId').value = '';
-                document.getElementById('formSaveBtn').innerHTML = '<i class="fas fa-plus-circle"></i> Agregar Producto';
-                document.getElementById('formCancelBtn').style.display = 'none';
-                showToast('Producto actualizado correctamente', 'success');
-            } else {
-                const newProduct = {
-                    id: Date.now().toString(36) + Math.random().toString(36).substr(2, 4),
-                    name,
-                    category,
-                    image: image || '',
-                    description,
-                    price,
-                    stock,
-                    available
-                };
-                products.push(newProduct);
-                showToast('Producto agregado correctamente', 'success');
+            } catch (error) {
+                console.error('Error guardando producto:', error);
+                showToast('Error al guardar: ' + error.message, 'error');
+                return;
             }
 
-            // Intentar guardar en localStorage
-            saveToStorage();
             clearForm();
             populateCategoryFilter();
             applyFilter();
@@ -1575,14 +1698,19 @@
             document.getElementById('formCancelBtn').style.display = 'none';
         }
 
-        function deleteProduct(id) {
+        async function deleteProduct(id) {
             if (!confirm('¿Eliminar este producto permanentemente?')) return;
-            products = products.filter(p => p.id !== id);
-            saveToStorage();
-            renderAdminList();
-            populateCategoryFilter();
-            applyFilter();
-            showToast('Producto eliminado', 'error');
+            try {
+                await deleteProductById(id);
+                products = products.filter(p => p.id !== id);
+                showToast('Producto eliminado', 'error');
+                renderAdminList();
+                populateCategoryFilter();
+                applyFilter();
+            } catch (error) {
+                console.error('Error eliminando:', error);
+                showToast('Error al eliminar: ' + error.message, 'error');
+            }
         }
 
         function clearForm() {
@@ -1614,7 +1742,7 @@
             showToast('JSON exportado correctamente', 'success');
         }
 
-        function importFromURL() {
+        async function importFromURL() {
             const url = document.getElementById('importUrl').value.trim();
             if (!url) {
                 alert('Ingresa una URL válida.');
@@ -1631,36 +1759,24 @@
                 </div>
             `;
 
-            fetch(url)
-                .then(res => {
-                    if (!res.ok) throw new Error('Error al obtener el archivo');
-                    return res.json();
-                })
-                .then(data => {
-                    if (!Array.isArray(data)) throw new Error('El formato no es un array de productos');
-                    products = data;
-                    const saved = saveToStorage();
-                    if (!saved) {
-                        showToast('⚠️ Datos importados pero no guardados localmente (espacio insuficiente).', 'error', 5000);
-                    } else {
-                        showToast('Importación exitosa desde URL', 'success');
-                    }
-                    clearForm();
-                    renderAdminList();
-                    populateCategoryFilter();
-                    applyFilter();
-                    // Eliminar spinner
-                    const spinner = document.getElementById('loadingSpinner');
-                    if (spinner) spinner.remove();
-                })
-                .catch(err => {
-                    showToast('Error al importar: ' + err.message, 'error');
-                    // Eliminar spinner
-                    const spinner = document.getElementById('loadingSpinner');
-                    if (spinner) spinner.remove();
-                    // Volver a renderizar
-                    renderCatalog();
-                });
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Error al obtener el archivo');
+                const data = await response.json();
+                if (!Array.isArray(data)) throw new Error('El formato no es un array de productos');
+                products = data;
+                await saveProductsToDB(products);
+                showToast('Importación exitosa desde URL', 'success');
+                clearForm();
+                renderAdminList();
+                populateCategoryFilter();
+                applyFilter();
+            } catch (error) {
+                showToast('Error al importar: ' + error.message, 'error');
+            } finally {
+                const spinner = document.getElementById('loadingSpinner');
+                if (spinner) spinner.remove();
+            }
         }
 
         // ============================================================
@@ -1753,10 +1869,10 @@
             }
         }
 
-        console.log('✅ NeoSolar · Manejo de errores de localStorage implementado');
-        console.log('📦 Productos totales:', products.length);
+        console.log('✅ NeoSolar · Almacenamiento con IndexedDB activado');
+        console.log('📦 Productos cargados:', products.length);
         console.log('📱 Teléfono configurado:', getPhoneNumber());
-        console.log('💾 Si localStorage está lleno, los datos se mantienen en memoria.');
+        console.log('💾 IndexedDB permite almacenar miles de productos sin límite de cuota.');
     </script>
 </body>
     </html>
