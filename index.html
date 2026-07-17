@@ -1098,7 +1098,7 @@
         // ============================================================
         //  TOAST NOTIFICATIONS
         // ============================================================
-        function showToast(message, type = 'success', duration = 4000) {
+        function showToast(message, type = 'success', duration = 5000) {
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
@@ -1118,43 +1118,67 @@
         }
 
         // ============================================================
-        //  INDICADOR DE SINCRONIZACIÓN
+        //  GUARDAR EN LOCALSTORAGE CON MANEJO DE ERROR
         // ============================================================
-        function setSyncIndicator(status, message) {
-            const el = document.getElementById('syncIndicator');
-            el.className = 'sync-indicator';
-            if (status === 'loading') {
-                el.innerHTML = `<i class="fas fa-sync-alt spinning"></i> ${message || 'Cargando...'}`;
-            } else if (status === 'success') {
-                el.className = 'sync-indicator success';
-                el.innerHTML = `<i class="fas fa-check-circle"></i> ${message || 'Sincronizado'}`;
-            } else if (status === 'error') {
-                el.className = 'sync-indicator error';
-                el.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message || 'Error de sincronización'}`;
-            } else {
-                el.innerHTML = `<i class="fas fa-circle"></i> Esperando...`;
+        function saveToStorage() {
+            try {
+                const data = JSON.stringify(products);
+                // Verificar tamaño aproximado (en MB)
+                const sizeMB = (data.length / 1024 / 1024);
+                if (sizeMB > 4) {
+                    console.warn('⚠️ Datos grandes (' + sizeMB.toFixed(2) + ' MB), puede exceder el límite de localStorage.');
+                }
+                localStorage.setItem(STORAGE_KEY, data);
+                return true;
+            } catch (error) {
+                if (error.name === 'QuotaExceededError' || error.message && error.message.includes('quota')) {
+                    console.error('❌ Error de cuota de localStorage:', error);
+                    showToast('⚠️ El almacenamiento local está lleno. Los datos no se guardarán permanentemente. Puedes exportar el JSON para respaldar.', 'error', 6000);
+                    return false;
+                }
+                console.error('❌ Error guardando en localStorage:', error);
+                showToast('Error al guardar datos localmente: ' + error.message, 'error');
+                return false;
             }
         }
 
         // ============================================================
-        //  CARGA DESDE GITHUB (RÁPIDA, SIN DATOS DE EJEMPLO)
+        //  CARGAR DESDE LOCALSTORAGE
+        // ============================================================
+        function loadFromStorage() {
+            try {
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        products = parsed;
+                        console.log('📦 Datos cargados desde localStorage:', products.length, 'productos');
+                        return true;
+                    }
+                }
+            } catch (error) {
+                console.error('Error cargando localStorage:', error);
+            }
+            return false;
+        }
+
+        // ============================================================
+        //  CARGA DESDE GITHUB (CON MANEJO DE CUOTA)
         // ============================================================
         async function loadFromGitHub() {
             const grid = document.getElementById('catalogGrid');
-            const spinner = document.getElementById('loadingSpinner');
-            if (!spinner) {
-                grid.innerHTML = `
-                    <div class="loading-spinner" id="loadingSpinner">
-                        <i class="fas fa-sync-alt"></i>
-                        <span>Cargando catálogo desde GitHub...</span>
-                    </div>
-                `;
-            }
+            // Mostrar spinner
+            grid.innerHTML = `
+                <div class="loading-spinner" id="loadingSpinner">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Cargando catálogo desde GitHub...</span>
+                </div>
+            `;
             setSyncIndicator('loading', 'Cargando...');
 
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 4000);
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
 
                 const response = await fetch(DEFAULT_JSON_URL, {
                     signal: controller.signal,
@@ -1166,62 +1190,41 @@
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
                 const data = await response.json();
-                if (Array.isArray(data)) {
+                if (Array.isArray(data) && data.length > 0) {
                     products = data;
-                    saveToStorage();
-                    console.log('✅ Datos cargados desde GitHub:', products.length, 'productos');
-                    showToast(`Catálogo actualizado con ${products.length} productos`, 'success');
+                    // Intentar guardar en localStorage, pero si falla por cuota, solo usar en memoria
+                    const saved = saveToStorage();
+                    if (!saved) {
+                        showToast('⚠️ Los datos se cargaron pero no se guardaron localmente (espacio insuficiente). Se usarán en memoria.', 'error', 5000);
+                    } else {
+                        showToast(`✅ Catálogo actualizado con ${products.length} productos desde GitHub`, 'success');
+                    }
                     setSyncIndicator('success', `${products.length} productos`);
+                    console.log('✅ Datos cargados desde GitHub:', products.length, 'productos');
                 } else {
-                    throw new Error('Formato inválido');
+                    throw new Error('Formato inválido o vacío');
                 }
             } catch (error) {
                 console.error('❌ Error cargando desde GitHub:', error);
-                // Intentar cargar desde localStorage como respaldo
-                const stored = localStorage.getItem(STORAGE_KEY);
-                if (stored) {
-                    try {
-                        const parsed = JSON.parse(stored);
-                        if (Array.isArray(parsed) && parsed.length > 0) {
-                            products = parsed;
-                            console.log('📦 Usando datos de localStorage como respaldo.');
-                            showToast('Usando datos guardados localmente (falló la sincronización)', 'error');
-                            setSyncIndicator('error', 'Usando caché local');
-                            // Renderizar con los datos locales
-                            populateCategoryFilter();
-                            applyFilter();
-                            renderAdminList();
-                            // Eliminar spinner
-                            const spinnerEl = document.getElementById('loadingSpinner');
-                            if (spinnerEl) spinnerEl.remove();
-                            return;
-                        }
-                    } catch (e) {}
+                // Intentar cargar desde localStorage
+                if (loadFromStorage()) {
+                    showToast('⚠️ Usando datos guardados localmente (falló la sincronización con GitHub)', 'error');
+                    setSyncIndicator('error', 'Usando caché local');
+                } else {
+                    products = [];
+                    showToast('❌ No se pudieron cargar los datos. Verifica tu conexión.', 'error');
+                    setSyncIndicator('error', 'Error de conexión');
                 }
-                // Si no hay respaldo, mostrar vacío
-                products = [];
-                saveToStorage();
-                showToast('No se pudieron cargar los datos. Verifica la conexión.', 'error');
-                setSyncIndicator('error', 'Error de conexión');
-                // Renderizar vacío
-                populateCategoryFilter();
-                applyFilter();
-                renderAdminList();
-                const spinnerEl = document.getElementById('loadingSpinner');
-                if (spinnerEl) spinnerEl.remove();
-                return;
             }
 
-            // Éxito: renderizar
+            // Renderizar siempre
             populateCategoryFilter();
             applyFilter();
             renderAdminList();
-            const spinnerEl = document.getElementById('loadingSpinner');
-            if (spinnerEl) spinnerEl.remove();
-        }
 
-        function saveToStorage() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+            // Eliminar spinner
+            const spinner = document.getElementById('loadingSpinner');
+            if (spinner) spinner.remove();
         }
 
         // ============================================================
@@ -1232,7 +1235,7 @@
         }
 
         // ============================================================
-        //  TELÉFONO (por defecto 5358776771)
+        //  TELÉFONO
         // ============================================================
         function savePhoneNumber() {
             const val = document.getElementById('phoneInput').value.trim();
@@ -1271,7 +1274,7 @@
             // Configurar URL de importación
             document.getElementById('importUrl').value = DEFAULT_JSON_URL;
 
-            // Cargar datos desde GitHub (si falla, usará localStorage o vacío)
+            // Cargar desde GitHub siempre
             await loadFromGitHub();
 
             // Manejar hash para admin
@@ -1369,7 +1372,6 @@
                 opt.textContent = c;
                 select.appendChild(opt);
             });
-            // Mantener filtro actual si existe
             if (currentCategoryFilter !== 'all' && categories.has(currentCategoryFilter)) {
                 select.value = currentCategoryFilter;
             } else {
@@ -1386,14 +1388,9 @@
 
         function renderCatalog() {
             const grid = document.getElementById('catalogGrid');
-            // Limpiar solo si no hay spinner
-            const spinner = document.getElementById('loadingSpinner');
-            if (!spinner) {
-                grid.innerHTML = '';
-            } else {
-                // Si hay spinner, no borrar
-                return;
-            }
+            // Si hay spinner, no borrar
+            if (document.getElementById('loadingSpinner')) return;
+            grid.innerHTML = '';
 
             let filtered = products;
             if (currentCategoryFilter !== 'all') {
@@ -1538,6 +1535,7 @@
                 showToast('Producto agregado correctamente', 'success');
             }
 
+            // Intentar guardar en localStorage
             saveToStorage();
             clearForm();
             populateCategoryFilter();
@@ -1623,6 +1621,16 @@
                 return;
             }
             if (!confirm('Esto reemplazará todos los productos actuales. ¿Continuar?')) return;
+
+            // Mostrar spinner en el grid
+            const grid = document.getElementById('catalogGrid');
+            grid.innerHTML = `
+                <div class="loading-spinner" id="loadingSpinner">
+                    <i class="fas fa-sync-alt"></i>
+                    <span>Importando desde URL...</span>
+                </div>
+            `;
+
             fetch(url)
                 .then(res => {
                     if (!res.ok) throw new Error('Error al obtener el archivo');
@@ -1631,15 +1639,27 @@
                 .then(data => {
                     if (!Array.isArray(data)) throw new Error('El formato no es un array de productos');
                     products = data;
-                    saveToStorage();
+                    const saved = saveToStorage();
+                    if (!saved) {
+                        showToast('⚠️ Datos importados pero no guardados localmente (espacio insuficiente).', 'error', 5000);
+                    } else {
+                        showToast('Importación exitosa desde URL', 'success');
+                    }
                     clearForm();
                     renderAdminList();
                     populateCategoryFilter();
                     applyFilter();
-                    showToast('Importación exitosa desde URL', 'success');
+                    // Eliminar spinner
+                    const spinner = document.getElementById('loadingSpinner');
+                    if (spinner) spinner.remove();
                 })
                 .catch(err => {
                     showToast('Error al importar: ' + err.message, 'error');
+                    // Eliminar spinner
+                    const spinner = document.getElementById('loadingSpinner');
+                    if (spinner) spinner.remove();
+                    // Volver a renderizar
+                    renderCatalog();
                 });
         }
 
@@ -1714,10 +1734,29 @@
             if (e.target === this) closeCartModal();
         });
 
-        console.log('✅ NeoSolar · Sin datos de ejemplo, carga rápida desde GitHub');
+        // ============================================================
+        //  INDICADOR DE SINCRONIZACIÓN
+        // ============================================================
+        function setSyncIndicator(status, message) {
+            const el = document.getElementById('syncIndicator');
+            el.className = 'sync-indicator';
+            if (status === 'loading') {
+                el.innerHTML = `<i class="fas fa-sync-alt spinning"></i> ${message || 'Cargando...'}`;
+            } else if (status === 'success') {
+                el.className = 'sync-indicator success';
+                el.innerHTML = `<i class="fas fa-check-circle"></i> ${message || 'Sincronizado'}`;
+            } else if (status === 'error') {
+                el.className = 'sync-indicator error';
+                el.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message || 'Error'}`;
+            } else {
+                el.innerHTML = `<i class="fas fa-circle"></i> Esperando...`;
+            }
+        }
+
+        console.log('✅ NeoSolar · Manejo de errores de localStorage implementado');
         console.log('📦 Productos totales:', products.length);
         console.log('📱 Teléfono configurado:', getPhoneNumber());
-        console.log('🔄 La página carga directamente desde GitHub.');
+        console.log('💾 Si localStorage está lleno, los datos se mantienen en memoria.');
     </script>
 </body>
     </html>
