@@ -7,7 +7,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* ===== RESET ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Orbitron', sans-serif;
@@ -332,7 +331,6 @@
         .empty-state h3 { font-size: 1.2rem; color: #b0c8e0; }
         .empty-state p { font-size: 0.9rem; max-width: 400px; }
 
-        /* ===== ADMIN ===== */
         .admin-panel {
             background: rgba(10, 14, 30, 0.6);
             backdrop-filter: blur(12px);
@@ -628,9 +626,13 @@
 
     <script>
         // ============================================================
-        // CONFIGURACIÓN PARA GITHUB PAGES (SIN PROXY)
+        // CONFIGURACIÓN CON PROXY CORS
         // ============================================================
-        const JSON_URL = 'https://raw.githubusercontent.com/costanorta-sys/neosolar/main/neosolar_catalog.json';
+        // 🔥 ESTA ES LA CLAVE: Usamos un proxy para evitar el bloqueo CORS
+        const PROXY_URL = 'https://api.allorigins.win/raw?url=';
+        const RAW_URL = 'https://raw.githubusercontent.com/costanorta-sys/neosolar/main/neosolar_catalog.json';
+        const JSON_URL = PROXY_URL + encodeURIComponent(RAW_URL);
+        
         const STORAGE_KEY = 'neosolar_products';
         const CONFIG_KEY = 'neosolar_config';
         const CART_KEY = 'neosolar_cart';
@@ -739,7 +741,7 @@
         }
 
         // ============================================================
-        // SINCRONIZACIÓN CON GITHUB (SIN PROXY, PARA GITHUB PAGES)
+        // SINCRONIZACIÓN CON GITHUB (CON PROXY)
         // ============================================================
         async function syncFromGitHub(showFeedback = true) {
             if (syncInProgress) {
@@ -752,17 +754,19 @@
                 document.getElementById('loadingSpinner').style.display = 'flex';
             }
 
+            console.log('🌐 Usando proxy CORS:', JSON_URL);
+
             let attempts = 0;
-            const maxAttempts = 5; // Más intentos para archivos grandes
+            const maxAttempts = 5;
             let success = false;
             let lastError = null;
 
             while (attempts < maxAttempts && !success) {
                 try {
                     attempts++;
-                    console.log(`🌐 Intento ${attempts}/${maxAttempts} - ${JSON_URL}`);
+                    console.log(`🌐 Intento ${attempts}/${maxAttempts}`);
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minutos (archivo grande)
+                    const timeoutId = setTimeout(() => controller.abort(), 120000);
 
                     const response = await fetch(JSON_URL, {
                         signal: controller.signal,
@@ -1277,6 +1281,8 @@
         // INICIALIZACIÓN
         // ============================================================
         async function init() {
+            console.log('🚀 Iniciando NEO·SOLAR con proxy CORS');
+            
             // Cargar datos locales primero
             loadLocalData();
 
@@ -1288,7 +1294,7 @@
             renderProductos();
             renderAdminList();
 
-            // Luego sincronizar desde GitHub
+            // Luego sincronizar desde GitHub (con proxy)
             await syncFromGitHub(true);
 
             // Manejar hash
@@ -1313,7 +1319,7 @@
                 reader.readAsDataURL(file);
             });
 
-            console.log('✅ NEO·SOLAR iniciado para GitHub Pages');
+            console.log('✅ NEO·SOLAR iniciado con proxy');
             console.log('📦 Productos:', productos.length);
             console.log('📱 WhatsApp:', getWhatsAppNumber());
         }
