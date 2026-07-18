@@ -2,16 +2,12 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>⚡ NeoSolar · Catálogo Futurista</title>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>⚡ NEO·SOLAR · Catálogo</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* ===== RESET & GLOBAL ===== */
+        /* ===== RESET ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Orbitron', sans-serif;
@@ -26,7 +22,6 @@
         ::-webkit-scrollbar-track { background: #0b0e1a; }
         ::-webkit-scrollbar-thumb { background: #00d4ff; border-radius: 10px; box-shadow: 0 0 12px #00d4ff88; }
 
-        /* ===== HEADER ===== */
         .header {
             display: flex;
             justify-content: space-between;
@@ -47,7 +42,8 @@
             background: linear-gradient(135deg, #00d4ff, #a855f7, #00d4ff);
             background-size: 200%;
             -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
             animation: shineText 4s linear infinite;
             letter-spacing: 2px;
         }
@@ -85,12 +81,10 @@
         .btn-neon.admin { border-color: #a855f7; color: #a855f7; }
         .btn-neon.admin:hover { background: #a855f7; color: #0b0e1a; box-shadow: 0 0 30px #a855f7aa; }
 
-        /* ===== VISTAS ===== */
         .view { display: none; animation: fadeIn 0.5s ease; }
         .view.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* ===== CATÁLOGO ===== */
         .catalog-header {
             display: flex;
             flex-wrap: wrap;
@@ -117,13 +111,12 @@
 
         .catalog-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 35px;
             padding: 10px 0;
             min-height: 300px;
         }
 
-        /* ===== TARJETAS ===== */
         .card {
             background: rgba(12, 18, 38, 0.8);
             backdrop-filter: blur(12px);
@@ -165,7 +158,7 @@
         .card-img-wrapper {
             position: relative;
             width: 100%;
-            height: 300px;
+            height: 260px;
             border-radius: 20px;
             overflow: hidden;
             background: #0a0d1a;
@@ -223,7 +216,6 @@
         .card-actions .btn-neon { flex: 1; justify-content: center; padding: 12px 10px; font-size: 0.75rem; }
         .card-actions .btn-neon:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
 
-        /* ===== LIGHTBOX ===== */
         .lightbox {
             position: fixed;
             top: 0;
@@ -284,7 +276,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* ===== TOAST ===== */
         .toast-msg {
             position: fixed;
             bottom: 30px;
@@ -295,7 +286,7 @@
             padding: 12px 24px;
             border-radius: 60px;
             z-index: 2000;
-            animation: fadeOut 3s forwards;
+            animation: fadeOut 4s forwards;
             text-align: center;
             font-size: 0.9rem;
             max-width: 90%;
@@ -308,6 +299,38 @@
             70% { opacity: 1; }
             100% { opacity: 0; visibility: hidden; transform: translateX(-50%) translateY(20px); }
         }
+
+        .sync-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.7rem;
+            color: #88aacc;
+            background: rgba(0,0,0,0.3);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .sync-indicator .fa-sync-alt { font-size: 0.8rem; }
+        .sync-indicator .fa-sync-alt.spinning { animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .sync-indicator.success { color: #39ff14; border-color: #39ff1444; }
+        .sync-indicator.error { color: #ff3b5c; border-color: #ff3b5c44; }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            gap: 15px;
+            color: #88aacc;
+            grid-column: 1 / -1;
+            text-align: center;
+        }
+        .empty-state i { font-size: 4rem; opacity: 0.3; }
+        .empty-state h3 { font-size: 1.2rem; color: #b0c8e0; }
+        .empty-state p { font-size: 0.9rem; max-width: 400px; }
 
         /* ===== ADMIN ===== */
         .admin-panel {
@@ -351,7 +374,6 @@
         .admin-form .file-field input[type="file"] { background: transparent; border: none; padding: 8px 0; color: #a0b8d0; font-family: 'Segoe UI', sans-serif; flex: 1; }
         .admin-form .file-field .preview-img { width: 70px; height: 70px; border-radius: 12px; object-fit: cover; background: #0f1322; border: 1px solid #2a3a5a; }
         .admin-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 8px; grid-column: 1 / -1; }
-
         .admin-list { margin-top: 30px; }
         .admin-list .list-item {
             display: flex;
@@ -372,8 +394,6 @@
         .admin-list .list-item .actions { display: flex; gap: 8px; flex-wrap: wrap; }
         .admin-list .list-item .actions .btn-neon { padding: 6px 16px; font-size: 0.65rem; }
         .admin-list .list-item .thumb { width: 55px; height: 55px; border-radius: 12px; object-fit: cover; background: #0f1322; border: 1px solid #2a3a5a; }
-
-        /* ===== IMPORT / EXPORT ===== */
         .io-section {
             background: rgba(0, 0, 0, 0.2);
             border-radius: 30px;
@@ -401,7 +421,6 @@
         }
         .io-section .io-group input:focus { border-color: #a855f7; }
 
-        /* ===== MODAL CARRITO ===== */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -447,7 +466,6 @@
         .modal-box .field input:focus { border-color: #00d4ff; box-shadow: 0 0 20px #00d4ff44; }
         .modal-actions { display: flex; gap: 12px; margin-top: 25px; justify-content: flex-end; }
 
-        /* ===== RESPONSIVE ===== */
         @media (max-width: 640px) {
             .header { flex-direction: column; align-items: stretch; border-radius: 30px; padding: 18px; }
             .header h1 { font-size: 1.4rem; text-align: center; }
@@ -463,7 +481,6 @@
             .card-title { font-size: 1rem; }
             .card-price { font-size: 1.3rem; }
         }
-
         .text-center { text-align: center; }
         .text-muted { color: #88aacc; font-size: 0.8rem; }
         .mt-20 { margin-top: 20px; }
@@ -479,43 +496,10 @@
             grid-column: 1 / -1;
         }
         .loading-spinner i { font-size: 2.5rem; animation: spin 1.2s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .sync-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.7rem;
-            color: #88aacc;
-            background: rgba(0,0,0,0.3);
-            padding: 4px 12px;
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.05);
-        }
-        .sync-indicator .fa-sync-alt { font-size: 0.8rem; }
-        .sync-indicator .fa-sync-alt.spinning { animation: spin 1s linear infinite; }
-        .sync-indicator.success { color: #39ff14; border-color: #39ff1444; }
-        .sync-indicator.error { color: #ff3b5c; border-color: #ff3b5c44; }
-
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 60px 20px;
-            gap: 15px;
-            color: #88aacc;
-            grid-column: 1 / -1;
-            text-align: center;
-        }
-        .empty-state i { font-size: 4rem; opacity: 0.3; }
-        .empty-state h3 { font-size: 1.2rem; color: #b0c8e0; }
-        .empty-state p { font-size: 0.9rem; max-width: 400px; }
     </style>
 </head>
 <body>
 
-    <!-- ==================== HEADER ==================== -->
     <header class="header">
         <div style="display:flex;align-items:center;gap:8px;">
             <span class="logo-icon"><i class="fas fa-solar-panel"></i></span>
@@ -525,11 +509,10 @@
             <button class="btn-neon" id="btnCatalog" onclick="switchView('catalog')">
                 <i class="fas fa-th"></i> Catálogo
             </button>
-            <!-- Admin oculto en menú, solo por URL -->
         </div>
     </header>
 
-    <!-- ==================== VISTA CATÁLOGO ==================== -->
+    <!-- ===== CATÁLOGO ===== -->
     <div id="catalogView" class="view active">
         <div class="catalog-header">
             <div class="filter">
@@ -540,8 +523,8 @@
             </div>
             <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                 <span class="text-muted" id="productCount">0 productos</span>
-                <button class="btn-neon" onclick="forceSyncNow()" style="padding:6px 14px; font-size:0.7rem;">
-                    <i class="fas fa-sync-alt"></i> Actualizar ahora
+                <button class="btn-neon" onclick="forceSync()" style="padding:6px 14px; font-size:0.7rem;">
+                    <i class="fas fa-sync-alt"></i> Actualizar
                 </button>
                 <span id="syncIndicator" class="sync-indicator">
                     <i class="fas fa-circle"></i> Cargando...
@@ -556,11 +539,10 @@
         </div>
     </div>
 
-    <!-- ==================== VISTA ADMIN (oculta, #/admin) ==================== -->
+    <!-- ===== ADMIN (oculto, #/admin) ===== -->
     <div id="adminView" class="view">
         <div class="admin-panel">
             <h2><i class="fas fa-cog" style="color:#a855f7;"></i> Panel de Control</h2>
-
             <!-- Configurar Teléfono -->
             <div style="background:rgba(0,0,0,0.2); padding:20px 25px; border-radius:30px; margin-bottom:30px; border:1px solid rgba(168,85,247,0.1);">
                 <div style="display:flex; flex-wrap:wrap; align-items:center; gap:15px;">
@@ -572,91 +554,64 @@
                     <span id="phoneStatus" style="font-size:0.75rem; color:#39ff14; margin-left:5px;"></span>
                 </div>
             </div>
-
-            <!-- Formulario Agregar / Editar -->
+            <!-- Formulario -->
             <div class="admin-form" id="productForm">
-                <div class="field">
-                    <label><i class="fas fa-tag"></i> Nombre</label>
-                    <input type="text" id="prodName" placeholder="Ej: Panel Solar 550W">
-                </div>
-                <div class="field">
-                    <label><i class="fas fa-folder"></i> Categoría</label>
-                    <input type="text" id="prodCategory" placeholder="Ej: Paneles, Inversores, Baterías">
-                </div>
+                <div class="field"><label>Nombre</label><input type="text" id="prodName" placeholder="Ej: Panel Solar"></div>
+                <div class="field"><label>Categoría</label><input type="text" id="prodCategory" placeholder="Ej: Paneles"></div>
                 <div class="field file-field">
-                    <label><i class="fas fa-image"></i> Imagen (local)</label>
+                    <label>Imagen</label>
                     <input type="file" id="prodImageFile" accept="image/*">
-                    <img id="prodImagePreview" class="preview-img" src="" alt="Vista previa" style="display:none;">
+                    <img id="prodImagePreview" class="preview-img" src="" style="display:none;">
                 </div>
-                <div class="field">
-                    <label><i class="fas fa-align-left"></i> Descripción</label>
-                    <textarea id="prodDesc" placeholder="Breve descripción..."></textarea>
-                </div>
-                <div class="field">
-                    <label><i class="fas fa-dollar-sign"></i> Precio (USD)</label>
-                    <input type="number" id="prodPrice" placeholder="0.00" step="0.01">
-                </div>
-                <div class="field">
-                    <label><i class="fas fa-boxes"></i> Stock</label>
-                    <input type="number" id="prodStock" placeholder="Cantidad disponible" min="0">
-                </div>
+                <div class="field"><label>Descripción</label><textarea id="prodDesc" placeholder="Breve descripción"></textarea></div>
+                <div class="field"><label>Precio (USD)</label><input type="number" id="prodPrice" step="0.01" placeholder="0.00"></div>
+                <div class="field"><label>Stock</label><input type="number" id="prodStock" min="0" placeholder="Cantidad"></div>
                 <div class="field checkbox-field">
-                    <label style="display:flex; align-items:center; gap:8px;">
-                        <input type="checkbox" id="prodAvailable" checked>
-                        <span>Disponible</span>
-                    </label>
+                    <label><input type="checkbox" id="prodAvailable" checked> Disponible</label>
                 </div>
                 <div class="admin-actions">
-                    <button class="btn-neon success" id="formSaveBtn" onclick="saveProduct()">
-                        <i class="fas fa-plus-circle"></i> Agregar Producto
-                    </button>
-                    <button class="btn-neon" id="formCancelBtn" onclick="cancelEdit()" style="display:none;">
-                        <i class="fas fa-times"></i> Cancelar
-                    </button>
+                    <button class="btn-neon success" id="formSaveBtn" onclick="saveProduct()"><i class="fas fa-plus-circle"></i> Agregar</button>
+                    <button class="btn-neon" id="formCancelBtn" onclick="cancelEdit()" style="display:none;"><i class="fas fa-times"></i> Cancelar</button>
                     <input type="hidden" id="editId" value="">
                     <input type="hidden" id="existingImage" value="">
                 </div>
             </div>
-
-            <!-- Lista de productos en admin -->
+            <!-- Lista admin -->
             <div class="admin-list">
-                <h3 style="color:#88aacc; font-size:1rem; margin-bottom:15px; letter-spacing:1px;">
-                    <i class="fas fa-list-ul"></i> Productos registrados
-                </h3>
+                <h3 style="color:#88aacc; font-size:1rem; margin-bottom:15px;">Productos registrados</h3>
                 <div id="adminProductList"></div>
             </div>
-
-            <!-- Sección Importar / Exportar JSON -->
+            <!-- Export/Import -->
             <div class="io-section">
                 <div class="io-group">
-                    <label><i class="fas fa-file-export"></i> Exportar JSON</label>
+                    <label>Exportar JSON</label>
                     <button class="btn-neon success" onclick="exportJSON()"><i class="fas fa-download"></i> Descargar</button>
                 </div>
                 <div class="io-group">
-                    <label><i class="fas fa-file-import"></i> Importar desde URL</label>
-                    <input type="text" id="importUrl" placeholder="URL del JSON (ej: raw de GitHub)" value="https://raw.githubusercontent.com/costanorta-sys/neosolar/refs/heads/main/neosolar_catalog.json">
+                    <label>Importar desde URL</label>
+                    <input type="text" id="importUrl" placeholder="URL del JSON" value="https://raw.githubusercontent.com/costanorta-sys/neosolar/refs/heads/main/neosolar_catalog.json">
                     <button class="btn-neon admin" onclick="importFromURL()"><i class="fas fa-upload"></i> Cargar</button>
                 </div>
                 <div class="io-group">
-                    <label><i class="fas fa-sync-alt"></i> Sincronizar automático</label>
-                    <button class="btn-neon" onclick="forceSyncNow()"><i class="fas fa-redo"></i> Forzar sincronización</button>
+                    <label>Forzar sincronización</label>
+                    <button class="btn-neon" onclick="forceSync()"><i class="fas fa-redo"></i> Sincronizar ahora</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ==================== LIGHTBOX ==================== -->
+    <!-- ===== LIGHTBOX ===== -->
     <div class="lightbox" id="lightbox" onclick="closeLightbox()">
         <button class="close-lightbox" onclick="closeLightbox()">✕</button>
-        <img id="lightboxImg" src="" alt="Vista ampliada">
+        <img id="lightboxImg" src="">
         <div class="lb-caption" id="lightboxCaption"></div>
     </div>
 
-    <!-- ==================== MODAL CARRITO ==================== -->
+    <!-- ===== MODAL CARRITO ===== -->
     <div class="modal-overlay" id="cartModal">
         <div class="modal-box">
             <h3><i class="fas fa-shopping-cart" style="color:#39ff14;"></i> Añadir al carrito</h3>
-            <div id="cartProductInfo" style="margin-bottom:12px; font-size:0.9rem; color:#a0b8d0;"></div>
+            <div id="cartProductInfo" style="margin-bottom:12px; color:#a0b8d0;"></div>
             <div class="field">
                 <label>Cantidad (máx. <span id="cartMaxStock">0</span>)</label>
                 <input type="number" id="cartQty" value="1" min="1" step="1">
@@ -666,73 +621,65 @@
             </div>
             <div class="modal-actions">
                 <button class="btn-neon" onclick="closeCartModal()"><i class="fas fa-times"></i> Cancelar</button>
-                <button class="btn-neon success" onclick="confirmCart()"><i class="fab fa-whatsapp"></i> Enviar por WhatsApp</button>
+                <button class="btn-neon success" onclick="confirmCart()"><i class="fab fa-whatsapp"></i> Enviar</button>
             </div>
         </div>
     </div>
 
     <script>
         // ============================================================
-        //  CONFIGURACIÓN Y CONSTANTES (igual que en MODA FIT)
+        // CONFIGURACIÓN
         // ============================================================
-        const STORAGE_PRODUCTS = 'neosolar_productos';
-        const STORAGE_CONFIG = 'neosolar_config';
-        const STORAGE_CART = 'neosolar_cart';
-        const STORAGE_REMOTE_URL = 'neosolar_remote_url';
+        const JSON_URL = 'https://raw.githubusercontent.com/costanorta-sys/neosolar/refs/heads/main/neosolar_catalog.json';
+        const STORAGE_KEY = 'neosolar_products';
+        const CONFIG_KEY = 'neosolar_config';
+        const CART_KEY = 'neosolar_cart';
 
-        // Estado global
+        // ============================================================
+        // ESTADO GLOBAL
+        // ============================================================
         let productos = [];
         let categorias = [];
-        let config = { whatsappNumber: "5358776771" };
+        let config = { whatsapp: "5358776771" };
         let cart = [];
-        let remoteJsonUrl = "https://raw.githubusercontent.com/costanorta-sys/neosolar/refs/heads/main/neosolar_catalog.json";
-        let categoriaActiva = "all";
+        let categoriaActiva = 'all';
         let syncInProgress = false;
-
-        // DOM references
-        const catalogGrid = document.getElementById('catalogGrid');
-        const categoryFilter = document.getElementById('categoryFilter');
-        const productCount = document.getElementById('productCount');
-        const syncIndicator = document.getElementById('syncIndicator');
-        const loadingSpinner = document.getElementById('loadingSpinner');
-        const phoneInput = document.getElementById('phoneInput');
-        const phoneStatus = document.getElementById('phoneStatus');
-        const prodName = document.getElementById('prodName');
-        const prodCategory = document.getElementById('prodCategory');
-        const prodImageFile = document.getElementById('prodImageFile');
-        const prodImagePreview = document.getElementById('prodImagePreview');
-        const prodDesc = document.getElementById('prodDesc');
-        const prodPrice = document.getElementById('prodPrice');
-        const prodStock = document.getElementById('prodStock');
-        const prodAvailable = document.getElementById('prodAvailable');
-        const editId = document.getElementById('editId');
-        const existingImage = document.getElementById('existingImage');
-        const formSaveBtn = document.getElementById('formSaveBtn');
-        const formCancelBtn = document.getElementById('formCancelBtn');
-        const adminProductList = document.getElementById('adminProductList');
-        const importUrl = document.getElementById('importUrl');
-        const cartModal = document.getElementById('cartModal');
-        const cartProductInfo = document.getElementById('cartProductInfo');
-        const cartMaxStock = document.getElementById('cartMaxStock');
-        const cartQty = document.getElementById('cartQty');
-        const cartTotalEl = document.getElementById('cartTotal');
-
+        let editingId = null;
         let cartProductId = null;
         let tempImageBase64 = '';
-        let editingId = null;
+
+        // DOM refs
+        const grid = document.getElementById('catalogGrid');
+        const filter = document.getElementById('categoryFilter');
+        const count = document.getElementById('productCount');
+        const syncIndicator = document.getElementById('syncIndicator');
+        const phoneInput = document.getElementById('phoneInput');
+        const phoneStatus = document.getElementById('phoneStatus');
 
         // ============================================================
-        //  FUNCIONES DE UTILIDAD
+        // UTILIDADES
         // ============================================================
-        function showMessage(msg, isError = false) {
-            const existing = document.querySelector('.toast-msg');
-            if (existing) existing.remove();
+        function showToast(msg, isError = false) {
+            document.querySelectorAll('.toast-msg').forEach(el => el.remove());
             const toast = document.createElement('div');
             toast.className = 'toast-msg';
             toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${msg}`;
             toast.style.background = isError ? '#c0392b' : '#1e2a3a';
             document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        function setSyncIndicator(status, msg) {
+            syncIndicator.className = 'sync-indicator';
+            if (status === 'loading') {
+                syncIndicator.innerHTML = `<i class="fas fa-sync-alt spinning"></i> ${msg || 'Cargando...'}`;
+            } else if (status === 'success') {
+                syncIndicator.className = 'sync-indicator success';
+                syncIndicator.innerHTML = `<i class="fas fa-check-circle"></i> ${msg || 'Sincronizado'}`;
+            } else if (status === 'error') {
+                syncIndicator.className = 'sync-indicator error';
+                syncIndicator.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${msg || 'Error'}`;
+            }
         }
 
         function escapeHtml(str) {
@@ -745,117 +692,66 @@
         }
 
         // ============================================================
-        //  PERSISTENCIA LOCAL (localStorage)
+        // PERSISTENCIA LOCAL
         // ============================================================
-        function saveProductsToLocal() {
-            localStorage.setItem(STORAGE_PRODUCTS, JSON.stringify(productos));
-        }
-
-        function saveConfigToLocal() {
-            localStorage.setItem(STORAGE_CONFIG, JSON.stringify(config));
-        }
-
-        function saveCartToLocal() {
-            localStorage.setItem(STORAGE_CART, JSON.stringify(cart));
-        }
-
         function loadLocalData() {
-            const storedProducts = localStorage.getItem(STORAGE_PRODUCTS);
-            if (storedProducts) {
-                try { productos = JSON.parse(storedProducts); } catch (e) { productos = []; }
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                try { productos = JSON.parse(stored); } catch (e) { productos = []; }
             } else {
-                // Datos de ejemplo por defecto (para primera ejecución)
-                productos = getSampleProducts();
-                saveProductsToLocal();
+                productos = [];
             }
 
-            const storedConfig = localStorage.getItem(STORAGE_CONFIG);
+            const storedConfig = localStorage.getItem(CONFIG_KEY);
             if (storedConfig) {
                 try { config = JSON.parse(storedConfig); } catch (e) {}
             } else {
-                saveConfigToLocal();
+                config = { whatsapp: "5358776771" };
+                localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
             }
 
-            const storedCart = localStorage.getItem(STORAGE_CART);
+            const storedCart = localStorage.getItem(CART_KEY);
             if (storedCart) {
                 try { cart = JSON.parse(storedCart); } catch (e) { cart = []; }
             } else {
                 cart = [];
-                saveCartToLocal();
             }
 
-            // Extraer categorías únicas de los productos
+            // Extraer categorías
             const cats = new Set();
             productos.forEach(p => { if (p.categoria) cats.add(p.categoria); });
             categorias = Array.from(cats);
 
-            // Cargar teléfono en el input
-            if (phoneInput) phoneInput.value = config.whatsappNumber || "5358776771";
+            if (phoneInput) phoneInput.value = config.whatsapp || "5358776771";
             updatePhoneStatus();
         }
 
-        function getSampleProducts() {
-            const sampleImg1 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MDAiIGhlaWdodD0iNTAwIiB2aWV3Qm94PSIwIDAgODAwIDUwMCI+PHJlY3Qgd2lkdGg9IjgwMCIgaGVpZ2h0PSI1MDAiIGZpbGw9IiMwYjBlMWEiLz48cmVjdCB4PSI1MCIgeT0iNzAiIHdpZHRoPSI3MDAiIGhlaWdodD0iMzUwIiBmaWxsPSIjMDA3N2ZmIiByeD0iMjAiLz48dGV4dCB4PSIyMDAiIHk9IjI4MCIgZm9udC1mYW1pbHk9Ik9yYml0cm9uIiBmb250LXNpemU9IjUwIiBmaWxsPSIjZmZmIj5QQSBORUwgU09MQVI8L3RleHQ+PC9zdmc+';
-            const sampleImg2 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MDAiIGhlaWdodD0iNjAwIiB2aWV3Qm94PSIwIDAgNjAwIDYwMCI+PHJlY3Qgd2lkdGg9IjYwMCIgaGVpZ2h0PSI2MDAiIGZpbGw9IiMwYjBlMWEiLz48Y2lyY2xlIGN4PSIzMDAiIGN5PSIzMDAiIHI9IjIwMCIgZmlsbD0iI2E4NTVmNyIvPjx0ZXh0IHg9IjE4MCIgeT0iMzIwIiBmb250LWZhbWlseT0iT3JiaXRyb24iIGZvbnQtc2l6ZT0iNDAiIGZpbGw9IiNmZmYiPklOVkVSU09SPC90ZXh0Pjwvc3ZnPg==';
-            const sampleImg3 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNzAwIiB2aWV3Qm94PSIwIDAgNDAwIDcwMCI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI3MDAiIGZpbGw9IiMwYjBlMWEiLz48cmVjdCB4PSI1MCIgeT0iMTAwIiB3aWR0aD0iMzAwIiBoZWlnaHQ9IjUwMCIgZmlsbD0iIzM5ZmYxNCIgcng9IjEwIi8+PHRleHQgeD0iODAiIHk9IjM4MCIgZm9udC1mYW1pbHk9Ik9yYml0cm9uIiBmb250LXNpemU9IjQwIiBmaWxsPSIjMDAwIj5CQVRFUklBPC90ZXh0Pjwvc3ZnPg==';
-            const sampleImg4 = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5MDAiIGhlaWdodD0iMjUwIiB2aWV3Qm94PSIwIDAgOTAwIDI1MCI+PHJlY3Qgd2lkdGg9IjkwMCIgaGVpZ2h0PSIyNTAiIGZpbGw9IiMwYjBlMWEiLz48cmVjdCB4PSIyMCIgeT0iMjAiIHdpZHRoPSI4NjAiIGhlaWdodD0iMjEwIiBmaWxsPSIjZmYzYjVjIiByeD0iMTUiLz48dGV4dCB4PSIyMDAiIHk9IjE0MCIgZm9udC1mYW1pbHk9Ik9yYml0cm9uIiBmb250LXNpemU9IjUwIiBmaWxsPSIjZmZmIj5DQUJMRSBTT0xBUjwvdGV4dD48L3N2Zz4=';
-            return [{
-                id: 101,
-                nombre: "Panel Solar 550W",
-                categoria: "Paneles",
-                imagenBase64: sampleImg1,
-                descripcion: "Panel monocristalino de alto rendimiento, eficiencia 21.5%. Ideal para instalaciones residenciales.",
-                precio: 189.00,
-                stock: 12,
-                activo: true
-            }, {
-                id: 102,
-                nombre: "Inversor Híbrido 5kW",
-                categoria: "Inversores",
-                imagenBase64: sampleImg2,
-                descripcion: "Inversor solar híbrido MPPT, compatible con baterías de litio. Pantalla LCD y monitorización WiFi.",
-                precio: 799.00,
-                stock: 5,
-                activo: true
-            }, {
-                id: 103,
-                nombre: "Batería Litio 10kWh",
-                categoria: "Baterías",
-                imagenBase64: sampleImg3,
-                descripcion: "Batería de litio-ferrofosfato (LiFePO4) con BMS integrado. Ciclo de vida >6000 ciclos.",
-                precio: 2450.00,
-                stock: 3,
-                activo: true
-            }, {
-                id: 104,
-                nombre: "Cable Solar 6mm² (100m)",
-                categoria: "Accesorios",
-                imagenBase64: sampleImg4,
-                descripcion: "Cable solar doble aislamiento, resistente a UV y alta temperatura. Incluye conectores MC4.",
-                precio: 89.50,
-                stock: 0,
-                activo: false
-            }];
+        function saveProductsLocal() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(productos));
+        }
+
+        function saveConfigLocal() {
+            localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
+        }
+
+        function saveCartLocal() {
+            localStorage.setItem(CART_KEY, JSON.stringify(cart));
         }
 
         // ============================================================
-        //  SINCRONIZACIÓN CON JSON REMOTO (igual que MODA FIT)
+        // SINCRONIZACIÓN CON GITHUB (MEJORADA)
         // ============================================================
-        async function loadProductsFromRemoteJson(showFeedback = true, updateLocalStorage = true) {
+        async function syncFromGitHub(showFeedback = true) {
             if (syncInProgress) {
-                showMessage("Ya hay una sincronización en curso...", false);
+                showToast('Ya hay una sincronización en curso', false);
                 return;
             }
             syncInProgress = true;
-            setSyncIndicator('loading', 'Sincronizando...');
+            setSyncIndicator('loading', 'Cargando...');
+            if (document.getElementById('loadingSpinner')) {
+                document.getElementById('loadingSpinner').style.display = 'flex';
+            }
 
-            // Mostrar spinner
-            if (loadingSpinner) loadingSpinner.style.display = 'flex';
-
-            let url = remoteJsonUrl;
-            if (importUrl) url = importUrl.value.trim() || url;
-
-            // Reintentos (3 intentos)
             let attempts = 0;
             const maxAttempts = 3;
             let success = false;
@@ -864,21 +760,14 @@
             while (attempts < maxAttempts && !success) {
                 try {
                     attempts++;
-                    console.log(`🌐 Intento ${attempts}/${maxAttempts} - ${url}`);
+                    console.log(`🌐 Intento ${attempts}/${maxAttempts} - ${JSON_URL}`);
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => {
-                        console.warn(`⏰ Timeout en intento ${attempts}`);
-                        controller.abort();
-                    }, 60000); // 60 segundos
+                    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
-                    const response = await fetch(url, {
+                    const response = await fetch(JSON_URL, {
                         signal: controller.signal,
                         cache: 'no-cache',
-                        headers: {
-                            'Cache-Control': 'no-cache',
-                            'Pragma': 'no-cache',
-                            'Accept': 'application/json'
-                        }
+                        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache', 'Accept': 'application/json' }
                     });
                     clearTimeout(timeoutId);
 
@@ -886,184 +775,133 @@
                         throw new Error(`HTTP ${response.status}`);
                     }
 
-                    const remoteData = await response.json();
+                    const data = await response.json();
+                    console.log('📦 Datos recibidos:', data);
 
-                    // Validar estructura
-                    if (remoteData.productos && Array.isArray(remoteData.productos)) {
-                        productos = remoteData.productos;
-                        if (updateLocalStorage) saveProductsToLocal();
-
-                        // Categorías
-                        if (remoteData.categorias && Array.isArray(remoteData.categorias)) {
-                            categorias = remoteData.categorias.filter(c => typeof c === 'string' && c.trim() !== '');
-                            if (updateLocalStorage) {
-                                // Guardamos categorías en el mismo storage de productos? No es necesario, se extraen de productos.
-                            }
-                        } else {
-                            const catsUnicas = [...new Set(productos.map(p => p.categoria).filter(c => c && typeof c === 'string' && c.trim() !== ""))];
-                            categorias = catsUnicas;
-                        }
-
-                        // Configuración
-                        if (remoteData.config && remoteData.config.whatsappNumber) {
-                            config.whatsappNumber = remoteData.config.whatsappNumber;
-                            if (updateLocalStorage) saveConfigToLocal();
-                            if (phoneInput) phoneInput.value = config.whatsappNumber;
-                            updatePhoneStatus();
-                        }
-
-                        if (showFeedback) showMessage(`✅ Datos sincronizados: ${productos.length} productos`);
-                        success = true;
+                    // 🔥 DETECCIÓN DE FORMATO
+                    let productosNuevos = [];
+                    if (Array.isArray(data)) {
+                        // Es un array directo de productos
+                        productosNuevos = data;
+                    } else if (data.productos && Array.isArray(data.productos)) {
+                        // Es un objeto con propiedad "productos"
+                        productosNuevos = data.productos;
                     } else {
-                        throw new Error("Formato de datos inválido");
+                        throw new Error('Formato de datos no reconocido: ni array ni objeto con "productos"');
                     }
+
+                    if (productosNuevos.length === 0) {
+                        throw new Error('El array de productos está vacío');
+                    }
+
+                    productos = productosNuevos;
+                    saveProductsLocal();
+
+                    // Actualizar categorías
+                    const cats = new Set();
+                    productos.forEach(p => { if (p.categoria) cats.add(p.categoria); });
+                    categorias = Array.from(cats);
+
+                    // Configuración adicional (si existe)
+                    if (data.config && data.config.whatsapp) {
+                        config.whatsapp = data.config.whatsapp;
+                        saveConfigLocal();
+                        if (phoneInput) phoneInput.value = config.whatsapp;
+                        updatePhoneStatus();
+                    }
+
+                    if (showFeedback) showToast(`✅ Sincronizado: ${productos.length} productos`);
+                    setSyncIndicator('success', `${productos.length} productos`);
+                    success = true;
+
                 } catch (err) {
                     lastError = err;
                     console.error(`❌ Error en intento ${attempts}:`, err);
                     if (attempts < maxAttempts) {
                         const delay = 3000 * attempts;
-                        showMessage(`⏳ Reintentando (${attempts}/${maxAttempts})...`, false);
+                        showToast(`⏳ Reintentando (${attempts}/${maxAttempts})...`, false);
                         await new Promise(resolve => setTimeout(resolve, delay));
                     }
                 }
             }
 
             if (!success) {
-                if (showFeedback) showMessage(`❌ Error al sincronizar: ${lastError ? lastError.message : 'Conexión fallida'}`, true);
-                setSyncIndicator('error', 'Error de sincronización');
-            } else {
-                setSyncIndicator('success', `${productos.length} productos`);
+                if (showFeedback) showToast(`❌ Error: ${lastError ? lastError.message : 'Conexión fallida'}`, true);
+                setSyncIndicator('error', 'Error');
+                // Intentar usar datos locales existentes
+                const stored = localStorage.getItem(STORAGE_KEY);
+                if (stored) {
+                    try { productos = JSON.parse(stored); } catch (e) { productos = []; }
+                    const cats = new Set();
+                    productos.forEach(p => { if (p.categoria) cats.add(p.categoria); });
+                    categorias = Array.from(cats);
+                    showToast('⚠️ Usando datos guardados localmente', false);
+                }
             }
 
             syncInProgress = false;
-            if (loadingSpinner) loadingSpinner.style.display = 'none';
+            if (document.getElementById('loadingSpinner')) {
+                document.getElementById('loadingSpinner').style.display = 'none';
+            }
 
-            // Renderizar
-            actualizarFiltrosCategoria();
+            // Renderizar siempre
+            actualizarFiltros();
             renderProductos();
-            renderAdminProductList();
-            updateCartUI();
-        }
-
-        // Función para forzar sincronización manual (botón)
-        async function forceSyncNow() {
-            await loadProductsFromRemoteJson(true, true);
+            renderAdminList();
         }
 
         // ============================================================
-        //  EXPORTAR E IMPORTAR
+        // RENDERIZADO
         // ============================================================
-        function exportJSON() {
-            const exportData = {
-                productos: productos,
-                categorias: categorias,
-                config: { whatsappNumber: config.whatsappNumber },
-                version: "1.0",
-                lastExport: new Date().toISOString()
-            };
-            const dataStr = JSON.stringify(exportData, null, 2);
-            const blob = new Blob([dataStr], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = "neosolar_catalog.json";
-            a.click();
-            URL.revokeObjectURL(url);
-            showMessage("📁 JSON exportado correctamente");
-        }
-
-        async function importFromURL() {
-            const url = importUrl.value.trim();
-            if (!url) {
-                showMessage("Ingresa una URL válida", true);
-                return;
-            }
-            if (!confirm("Esto reemplazará todos los productos. ¿Continuar?")) return;
-            await loadProductsFromRemoteJson(true, true);
-        }
-
-        // ============================================================
-        //  TELÉFONO
-        // ============================================================
-        function savePhoneNumber() {
-            const val = phoneInput.value.trim();
-            if (val) {
-                config.whatsappNumber = val;
-                saveConfigToLocal();
-                updatePhoneStatus();
-                showMessage("Número guardado");
-            } else {
-                showMessage("Ingresa un número válido", true);
-            }
-        }
-
-        function updatePhoneStatus() {
-            const num = config.whatsappNumber || "No configurado";
-            if (phoneStatus) {
-                phoneStatus.innerHTML = `<i class="fas fa-check-circle"></i> Configurado: +${num}`;
-                phoneStatus.style.color = '#39ff14';
-            }
-        }
-
-        function getPhoneNumber() {
-            return config.whatsappNumber || "5358776771";
-        }
-
-        // ============================================================
-        //  CATÁLOGO Y FILTROS
-        // ============================================================
-        function actualizarFiltrosCategoria() {
-            if (!categoryFilter) return;
+        function actualizarFiltros() {
             const cats = new Set();
             productos.forEach(p => { if (p.categoria) cats.add(p.categoria); });
             categorias = Array.from(cats);
-
             let html = '<option value="all">Todas</option>';
             categorias.forEach(c => {
                 html += `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`;
             });
-            categoryFilter.innerHTML = html;
-            categoryFilter.value = categoriaActiva || 'all';
+            filter.innerHTML = html;
+            filter.value = categoriaActiva || 'all';
         }
 
         function applyFilter() {
-            categoriaActiva = categoryFilter.value;
+            categoriaActiva = filter.value;
             renderProductos();
         }
 
         function renderProductos() {
-            if (!catalogGrid) return;
-
+            if (!grid) return;
             let filtrados = productos.filter(p => p.activo !== false);
             if (categoriaActiva !== 'all') {
                 filtrados = filtrados.filter(p => p.categoria === categoriaActiva);
             }
 
             if (filtrados.length === 0) {
-                catalogGrid.innerHTML = `
+                grid.innerHTML = `
                     <div class="empty-state">
                         <i class="fas fa-box-open"></i>
                         <h3>No hay productos</h3>
-                        <p>Presiona "Actualizar ahora" para sincronizar con GitHub.</p>
+                        <p>Presiona "Actualizar" para sincronizar.</p>
                     </div>
                 `;
-                productCount.textContent = '0 productos';
+                count.textContent = '0 productos';
                 return;
             }
 
-            productCount.textContent = filtrados.length + ' productos';
+            count.textContent = filtrados.length + ' productos';
             let html = '';
             filtrados.forEach(p => {
                 const imgSrc = p.imagenBase64 || 'https://placehold.co/600x400?text=NEO+SOLAR';
-                const stockText = (p.stock !== undefined && p.stock > 0) ?
+                const stockText = (p.stock && p.stock > 0) ?
                     `<span class="badge"><i class="fas fa-check-circle" style="color:#39ff14;"></i> ${p.stock} uds.</span>` :
                     `<span class="badge agotado"><i class="fas fa-times-circle"></i> AGOTADO</span>`;
-                const disabledAttr = (p.stock !== undefined && p.stock <= 0) ? 'disabled' : '';
+                const disabled = (p.stock && p.stock <= 0) ? 'disabled' : '';
 
                 html += `
                     <div class="card">
                         <div class="card-img-wrapper" data-fullimg="${imgSrc}">
-                            <img class="product-img" src="${imgSrc}" alt="${escapeHtml(p.nombre)}" loading="lazy" onerror="this.src='https://placehold.co/600x400?text=error'">
+                            <img src="${imgSrc}" alt="${escapeHtml(p.nombre)}" loading="lazy" onerror="this.src='https://placehold.co/600x400?text=error'">
                         </div>
                         <div class="card-category">${p.categoria || 'Sin categoría'}</div>
                         <div class="card-title">${escapeHtml(p.nombre)}</div>
@@ -1071,22 +909,21 @@
                         <div class="card-price">$ ${p.precio ? p.precio.toFixed(2) : '0.00'}</div>
                         <div class="card-stock">${stockText}</div>
                         <div class="card-actions">
-                            <button class="btn-neon" ${disabledAttr} onclick="openCartModal('${p.id}')">
+                            <button class="btn-neon" ${disabled} onclick="openCart('${p.id}')">
                                 <i class="fas fa-cart-plus"></i> Añadir
                             </button>
                         </div>
                     </div>
                 `;
             });
-            catalogGrid.innerHTML = html;
+            grid.innerHTML = html;
 
-            // Evento para lightbox al hacer clic en la imagen
+            // Lightbox en imágenes
             document.querySelectorAll('.card-img-wrapper').forEach(el => {
-                el.addEventListener('click', function(e) {
-                    const fullImg = this.getAttribute('data-fullimg');
-                    if (fullImg) {
-                        document.getElementById('lightboxImg').src = fullImg;
-                        document.getElementById('lightboxCaption').textContent = '';
+                el.addEventListener('click', function() {
+                    const full = this.getAttribute('data-fullimg');
+                    if (full) {
+                        document.getElementById('lightboxImg').src = full;
                         document.getElementById('lightbox').classList.add('open');
                     }
                 });
@@ -1094,12 +931,13 @@
         }
 
         // ============================================================
-        //  ADMIN: LISTA Y CRUD
+        // ADMIN: CRUD
         // ============================================================
-        function renderAdminProductList() {
-            if (!adminProductList) return;
+        function renderAdminList() {
+            const container = document.getElementById('adminProductList');
+            if (!container) return;
             if (!productos || productos.length === 0) {
-                adminProductList.innerHTML = '<div class="text-muted" style="padding:20px;">No hay productos aún.</div>';
+                container.innerHTML = '<div class="text-muted" style="padding:20px;">No hay productos.</div>';
                 return;
             }
             let html = '';
@@ -1109,36 +947,36 @@
                 const imgSrc = p.imagenBase64 || 'https://placehold.co/55x55';
                 html += `
                     <div class="list-item">
-                        <img class="thumb" src="${imgSrc}" alt="${escapeHtml(p.nombre)}">
+                        <img class="thumb" src="${imgSrc}">
                         <div class="info">
                             <strong>${escapeHtml(p.nombre)}</strong>
                             <span class="small">${p.categoria || 'Sin cat.'}</span>
                             <span class="small">$ ${p.precio ? p.precio.toFixed(2) : '0.00'}</span>
                             <span class="small" style="color:${p.activo !== false ? '#39ff14' : '#ff3b5c'}">
-                                ${p.activo !== false ? `Stock: ${p.stock ?? 0}` : 'INACTIVO'}
+                                ${p.activo !== false ? `Stock: ${p.stock || 0}` : 'INACTIVO'}
                             </span>
                         </div>
                         <div class="actions">
-                            <button class="btn-neon" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i> Editar</button>
+                            <button class="btn-neon" onclick="editProduct('${p.id}')"><i class="fas fa-edit"></i></button>
                             <button class="btn-neon danger" onclick="deleteProduct('${p.id}')"><i class="fas fa-trash"></i></button>
-                            <button class="btn-neon ${p.activo !== false ? 'danger' : 'success'}" onclick="toggleProductStatus('${p.id}')">
+                            <button class="btn-neon ${p.activo !== false ? 'danger' : 'success'}" onclick="toggleStatus('${p.id}')">
                                 ${p.activo !== false ? 'Desactivar' : 'Activar'}
                             </button>
                         </div>
                     </div>
                 `;
             });
-            adminProductList.innerHTML = html;
+            container.innerHTML = html;
         }
 
-        function toggleProductStatus(id) {
+        function toggleStatus(id) {
             const p = productos.find(prod => prod.id == id);
             if (p) {
                 p.activo = !(p.activo !== false);
-                saveProductsToLocal();
-                renderAdminProductList();
+                saveProductsLocal();
+                renderAdminList();
                 renderProductos();
-                showMessage(`Producto ${p.activo !== false ? 'activado' : 'desactivado'}`);
+                showToast(`Producto ${p.activo !== false ? 'activado' : 'desactivado'}`);
             }
         }
 
@@ -1147,83 +985,77 @@
             if (!p) return;
             editingId = p.id;
             document.getElementById('editId').value = p.id;
-            prodName.value = p.nombre || '';
-            prodCategory.value = p.categoria || '';
-            prodDesc.value = p.descripcion || '';
-            prodPrice.value = p.precio || '';
-            prodStock.value = p.stock ?? 0;
-            prodAvailable.checked = p.activo !== false;
+            document.getElementById('prodName').value = p.nombre || '';
+            document.getElementById('prodCategory').value = p.categoria || '';
+            document.getElementById('prodDesc').value = p.descripcion || '';
+            document.getElementById('prodPrice').value = p.precio || '';
+            document.getElementById('prodStock').value = p.stock || 0;
+            document.getElementById('prodAvailable').checked = p.activo !== false;
             if (p.imagenBase64) {
-                prodImagePreview.src = p.imagenBase64;
-                prodImagePreview.style.display = 'block';
-                existingImage.value = p.imagenBase64;
+                document.getElementById('prodImagePreview').src = p.imagenBase64;
+                document.getElementById('prodImagePreview').style.display = 'block';
+                document.getElementById('existingImage').value = p.imagenBase64;
             } else {
-                prodImagePreview.style.display = 'none';
-                existingImage.value = '';
+                document.getElementById('prodImagePreview').style.display = 'none';
+                document.getElementById('existingImage').value = '';
             }
             tempImageBase64 = '';
-            prodImageFile.value = '';
-            formSaveBtn.innerHTML = '<i class="fas fa-save"></i> Actualizar Producto';
-            formCancelBtn.style.display = 'inline-flex';
+            document.getElementById('prodImageFile').value = '';
+            document.getElementById('formSaveBtn').innerHTML = '<i class="fas fa-save"></i> Actualizar';
+            document.getElementById('formCancelBtn').style.display = 'inline-flex';
             document.getElementById('productForm').scrollIntoView({ behavior: 'smooth' });
         }
 
         function cancelEdit() {
-            clearForm();
             editingId = null;
             document.getElementById('editId').value = '';
-            formSaveBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Agregar Producto';
-            formCancelBtn.style.display = 'none';
-        }
-
-        function clearForm() {
-            prodName.value = '';
-            prodCategory.value = '';
-            prodDesc.value = '';
-            prodPrice.value = '';
-            prodStock.value = '';
-            prodAvailable.checked = true;
-            prodImageFile.value = '';
-            prodImagePreview.style.display = 'none';
+            document.getElementById('formSaveBtn').innerHTML = '<i class="fas fa-plus-circle"></i> Agregar';
+            document.getElementById('formCancelBtn').style.display = 'none';
+            document.getElementById('prodName').value = '';
+            document.getElementById('prodCategory').value = '';
+            document.getElementById('prodDesc').value = '';
+            document.getElementById('prodPrice').value = '';
+            document.getElementById('prodStock').value = '';
+            document.getElementById('prodAvailable').checked = true;
+            document.getElementById('prodImageFile').value = '';
+            document.getElementById('prodImagePreview').style.display = 'none';
+            document.getElementById('existingImage').value = '';
             tempImageBase64 = '';
-            existingImage.value = '';
         }
 
-        async function saveProduct() {
-            const name = prodName.value.trim();
-            const category = prodCategory.value.trim();
-            const description = prodDesc.value.trim();
-            const price = parseFloat(prodPrice.value);
-            const stock = parseInt(prodStock.value) || 0;
-            const available = prodAvailable.checked;
+        function saveProduct() {
+            const name = document.getElementById('prodName').value.trim();
+            const category = document.getElementById('prodCategory').value.trim();
+            const desc = document.getElementById('prodDesc').value.trim();
+            const price = parseFloat(document.getElementById('prodPrice').value);
+            const stock = parseInt(document.getElementById('prodStock').value) || 0;
+            const available = document.getElementById('prodAvailable').checked;
             const editIdVal = document.getElementById('editId').value;
 
             if (!name || isNaN(price) || price < 0) {
-                showMessage('Completa nombre y precio válido', true);
+                showToast('Completa nombre y precio válido', true);
                 return;
             }
 
-            let image = existingImage.value || '';
-            if (tempImageBase64) {
-                image = tempImageBase64;
-            }
+            let image = document.getElementById('existingImage').value || '';
+            if (tempImageBase64) image = tempImageBase64;
 
-            // Manejar subida de archivo
-            const file = prodImageFile.files[0];
+            // Si hay archivo nuevo, leerlo
+            const file = document.getElementById('prodImageFile').files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     image = e.target.result;
-                    saveProductData(name, category, description, price, stock, available, image, editIdVal);
+                    saveProductData(name, category, desc, price, stock, available, image, editIdVal);
                 };
                 reader.readAsDataURL(file);
                 return;
             }
 
-            saveProductData(name, category, description, price, stock, available, image, editIdVal);
+            saveProductData(name, category, desc, price, stock, available, image, editIdVal);
         }
 
-        function saveProductData(name, category, description, price, stock, available, image, editIdVal) {
+        function saveProductData(name, category, desc, price, stock, available, image, editIdVal) {
             if (editIdVal) {
                 const idx = productos.findIndex(p => p.id == editIdVal);
                 if (idx !== -1) {
@@ -1231,96 +1063,120 @@
                         ...productos[idx],
                         nombre: name,
                         categoria: category,
-                        descripcion: description,
+                        descripcion: desc,
                         precio: price,
                         stock: stock,
                         activo: available,
                         imagenBase64: image || productos[idx].imagenBase64
                     };
                 }
-                showMessage('Producto actualizado');
+                showToast('Producto actualizado');
             } else {
                 const newProduct = {
                     id: Date.now(),
                     nombre: name,
                     categoria: category,
-                    descripcion: description,
+                    descripcion: desc,
                     precio: price,
                     stock: stock,
                     activo: available,
                     imagenBase64: image || ''
                 };
                 productos.push(newProduct);
-                showMessage('Producto agregado');
+                showToast('Producto agregado');
             }
 
-            saveProductsToLocal();
+            saveProductsLocal();
             cancelEdit();
-            actualizarFiltrosCategoria();
+            actualizarFiltros();
             renderProductos();
-            renderAdminProductList();
-            updateCartUI();
+            renderAdminList();
         }
 
         function deleteProduct(id) {
             if (!confirm('¿Eliminar permanentemente?')) return;
             productos = productos.filter(p => p.id != id);
-            saveProductsToLocal();
-            renderAdminProductList();
+            saveProductsLocal();
+            renderAdminList();
             renderProductos();
-            actualizarFiltrosCategoria();
-            showMessage('Producto eliminado');
+            actualizarFiltros();
+            showToast('Producto eliminado');
         }
 
         // ============================================================
-        //  CARRITO
+        // TELÉFONO
         // ============================================================
-        function openCartModal(productId) {
+        function savePhoneNumber() {
+            const val = phoneInput.value.trim();
+            if (val) {
+                config.whatsapp = val;
+                saveConfigLocal();
+                updatePhoneStatus();
+                showToast('Número guardado');
+            } else {
+                showToast('Ingresa un número válido', true);
+            }
+        }
+
+        function updatePhoneStatus() {
+            const num = config.whatsapp || 'No configurado';
+            phoneStatus.innerHTML = `<i class="fas fa-check-circle"></i> Configurado: +${num}`;
+            phoneStatus.style.color = '#39ff14';
+        }
+
+        function getWhatsAppNumber() {
+            return config.whatsapp || "5358776771";
+        }
+
+        // ============================================================
+        // CARRITO
+        // ============================================================
+        function openCart(productId) {
             const p = productos.find(prod => prod.id == productId);
             if (!p) return;
             if (p.activo === false || p.stock <= 0) {
-                showMessage('Producto no disponible', true);
+                showToast('Producto no disponible', true);
                 return;
             }
-            cartProductId = productId;
-            cartProductInfo.innerHTML = `<strong>${escapeHtml(p.nombre)}</strong> · $ ${p.precio ? p.precio.toFixed(2) : '0.00'}/ud.`;
-            cartMaxStock.textContent = p.stock || 0;
-            cartQty.value = 1;
-            cartQty.max = p.stock || 1;
+            cartProductId = p.id;
+            document.getElementById('cartProductInfo').innerHTML =
+                `<strong>${escapeHtml(p.nombre)}</strong> · $ ${p.precio ? p.precio.toFixed(2) : '0.00'}/ud.`;
+            document.getElementById('cartMaxStock').textContent = p.stock || 0;
+            document.getElementById('cartQty').value = 1;
+            document.getElementById('cartQty').max = p.stock || 1;
             updateCartTotal();
-            cartModal.classList.add('open');
+            document.getElementById('cartModal').classList.add('open');
         }
 
         function closeCartModal() {
-            cartModal.classList.remove('open');
-            cartProductId = null;
+            document.getElementById('cartModal').classList.remove('open');
         }
 
         function updateCartTotal() {
             const p = productos.find(prod => prod.id == cartProductId);
             if (!p) return;
-            const qty = parseInt(cartQty.value) || 1;
+            const qty = parseInt(document.getElementById('cartQty').value) || 1;
             const total = (p.precio || 0) * qty;
-            cartTotalEl.textContent = total.toFixed(2) + ' USD';
+            document.getElementById('cartTotal').textContent = total.toFixed(2) + ' USD';
         }
 
-        cartQty.addEventListener('input', updateCartTotal);
+        document.getElementById('cartQty').addEventListener('input', updateCartTotal);
 
         function confirmCart() {
-            const phone = getPhoneNumber();
+            const phone = getWhatsAppNumber();
             if (!phone) {
-                showMessage('Configura tu número de WhatsApp', true);
+                showToast('Configura tu número de WhatsApp', true);
                 return;
             }
             const p = productos.find(prod => prod.id == cartProductId);
             if (!p) return;
-            const qty = parseInt(cartQty.value) || 1;
+            const qty = parseInt(document.getElementById('cartQty').value) || 1;
             if (qty < 1) {
-                showMessage('Cantidad mínima 1', true);
+                showToast('Cantidad mínima 1', true);
                 return;
             }
             if (qty > (p.stock || 0)) {
-                showMessage(`Stock insuficiente. Disponible: ${p.stock}`, true);
+                showToast(`Stock insuficiente. Disponible: ${p.stock}`, true);
                 return;
             }
             const total = (p.precio || 0) * qty;
@@ -1331,20 +1187,62 @@
                 `- Precio unitario: $ ${p.precio ? p.precio.toFixed(2) : '0.00'}\n` +
                 `- Total: $ ${total.toFixed(2)}\n\n` +
                 `Gracias.`;
-
             const url = `https://wa.me/${phone}?text=${encodeURIComponent(mensaje)}`;
             window.open(url, '_blank');
             closeCartModal();
-            showMessage('Pedido enviado por WhatsApp');
+            showToast('Pedido enviado por WhatsApp');
         }
 
-        // Cerrar modal al hacer clic fuera
-        cartModal.addEventListener('click', function(e) {
-            if (e.target === this) closeCartModal();
-        });
+        // ============================================================
+        // EXPORTAR / IMPORTAR
+        // ============================================================
+        function exportJSON() {
+            const data = { productos, config, categorias, version: "1.0", lastExport: new Date().toISOString() };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'neosolar_catalog.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('JSON exportado');
+        }
+
+        async function importFromURL() {
+            const url = document.getElementById('importUrl').value.trim();
+            if (!url) { showToast('Ingresa una URL', true); return; }
+            if (!confirm('Reemplazará todos los productos. ¿Continuar?')) return;
+            // Usar la misma lógica de sincronización pero con la URL personalizada
+            const originalUrl = JSON_URL;
+            // No podemos cambiar fácilmente la URL en syncFromGitHub, así que usamos fetch directo
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                let productosNuevos = [];
+                if (Array.isArray(data)) productosNuevos = data;
+                else if (data.productos && Array.isArray(data.productos)) productosNuevos = data.productos;
+                else throw new Error('Formato no válido');
+                productos = productosNuevos;
+                saveProductsLocal();
+                actualizarFiltros();
+                renderProductos();
+                renderAdminList();
+                showToast(`Importado: ${productos.length} productos`);
+            } catch (err) {
+                showToast(`Error: ${err.message}`, true);
+            }
+        }
 
         // ============================================================
-        //  LIGHTBOX
+        // FORZAR SINCRONIZACIÓN
+        // ============================================================
+        async function forceSync() {
+            await syncFromGitHub(true);
+        }
+
+        // ============================================================
+        // LIGHTBOX
         // ============================================================
         function closeLightbox() {
             document.getElementById('lightbox').classList.remove('open');
@@ -1358,101 +1256,73 @@
         });
 
         // ============================================================
-        //  INDICADOR DE SINCRONIZACIÓN
-        // ============================================================
-        function setSyncIndicator(status, message) {
-            if (!syncIndicator) return;
-            syncIndicator.className = 'sync-indicator';
-            if (status === 'loading') {
-                syncIndicator.innerHTML = `<i class="fas fa-sync-alt spinning"></i> ${message || 'Cargando...'}`;
-            } else if (status === 'success') {
-                syncIndicator.className = 'sync-indicator success';
-                syncIndicator.innerHTML = `<i class="fas fa-check-circle"></i> ${message || 'Sincronizado'}`;
-            } else if (status === 'error') {
-                syncIndicator.className = 'sync-indicator error';
-                syncIndicator.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message || 'Error'}`;
-            } else {
-                syncIndicator.innerHTML = `<i class="fas fa-circle"></i> Esperando...`;
-            }
-        }
-
-        // ============================================================
-        //  VISTAS (admin oculto)
+        // VISTAS
         // ============================================================
         function switchView(view) {
             document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
             if (view === 'catalog') {
                 document.getElementById('catalogView').classList.add('active');
-                renderProductos();
                 history.pushState(null, '', '#/');
             } else if (view === 'admin') {
                 document.getElementById('adminView').classList.add('active');
-                renderAdminProductList();
+                renderAdminList();
                 history.pushState(null, '', '#/admin');
             }
         }
 
         window.addEventListener('hashchange', () => {
             const hash = window.location.hash;
-            if (hash === '#/admin') {
-                switchView('admin');
-            } else {
-                switchView('catalog');
-            }
+            if (hash === '#/admin') switchView('admin');
+            else switchView('catalog');
         });
 
         // ============================================================
-        //  INICIALIZACIÓN
+        // INICIALIZACIÓN
         // ============================================================
         async function init() {
             // Cargar datos locales primero
             loadLocalData();
 
-            // Configurar URL de importación
-            if (importUrl) importUrl.value = remoteJsonUrl;
+            // Configurar campo de importación
+            document.getElementById('importUrl').value = JSON_URL;
 
-            // Renderizar categorías y productos con datos locales
-            actualizarFiltrosCategoria();
+            // Renderizar con datos locales (si existen)
+            actualizarFiltros();
             renderProductos();
-            renderAdminProductList();
-            updateCartUI();
+            renderAdminList();
 
-            // Cargar desde JSON remoto automáticamente
-            await loadProductsFromRemoteJson(true, true);
+            // Luego sincronizar desde GitHub
+            await syncFromGitHub(true);
 
-            // Manejar hash para admin
+            // Manejar hash
             const hash = window.location.hash;
-            if (hash === '#/admin') {
-                switchView('admin');
-            } else {
-                switchView('catalog');
-            }
+            if (hash === '#/admin') switchView('admin');
+            else switchView('catalog');
 
-            // Evento para imagen local
-            prodImageFile.addEventListener('change', function(e) {
+            // Evento para previsualizar imagen
+            document.getElementById('prodImageFile').addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 if (!file) {
                     tempImageBase64 = '';
-                    prodImagePreview.style.display = 'none';
+                    document.getElementById('prodImagePreview').style.display = 'none';
                     return;
                 }
                 const reader = new FileReader();
-                reader.onload = function(event) {
-                    tempImageBase64 = event.target.result;
-                    prodImagePreview.src = tempImageBase64;
-                    prodImagePreview.style.display = 'block';
+                reader.onload = function(ev) {
+                    tempImageBase64 = ev.target.result;
+                    document.getElementById('prodImagePreview').src = tempImageBase64;
+                    document.getElementById('prodImagePreview').style.display = 'block';
                 };
                 reader.readAsDataURL(file);
             });
+
+            console.log('✅ NEO·SOLAR iniciado');
+            console.log('📦 Productos:', productos.length);
+            console.log('📱 WhatsApp:', getWhatsAppNumber());
+            console.log('🔄 Sincronización automática completada.');
         }
 
-        // Iniciar cuando el DOM esté listo
         document.addEventListener('DOMContentLoaded', init);
-
-        console.log('✅ NeoSolar · Sincronización adaptada al sistema MODA FIT');
-        console.log('📦 Productos cargados:', productos.length);
-        console.log('📱 Teléfono configurado:', getPhoneNumber());
-        console.log('🔄 Sincronización automática al abrir la página.');
     </script>
 </body>
     </html>
