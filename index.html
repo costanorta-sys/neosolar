@@ -589,7 +589,7 @@
                 </div>
                 <div class="io-group">
                     <label>Importar desde URL</label>
-                    <input type="text" id="importUrl" placeholder="URL del JSON" value="https://raw.githubusercontent.com/costanorta-sys/neosolar/refs/heads/main/neosolar_catalog.json">
+                    <input type="text" id="importUrl" placeholder="URL del JSON" value="https://raw.githubusercontent.com/costanorta-sys/neosolar/main/neosolar_catalog.json">
                     <button class="btn-neon admin" onclick="importFromURL()"><i class="fas fa-upload"></i> Cargar</button>
                 </div>
                 <div class="io-group">
@@ -628,9 +628,9 @@
 
     <script>
         // ============================================================
-        // CONFIGURACIÓN
+        // CONFIGURACIÓN PARA GITHUB PAGES (SIN PROXY)
         // ============================================================
-        const JSON_URL = 'https://raw.githubusercontent.com/costanorta-sys/neosolar/refs/heads/main/neosolar_catalog.json';
+        const JSON_URL = 'https://raw.githubusercontent.com/costanorta-sys/neosolar/main/neosolar_catalog.json';
         const STORAGE_KEY = 'neosolar_products';
         const CONFIG_KEY = 'neosolar_config';
         const CART_KEY = 'neosolar_cart';
@@ -739,7 +739,7 @@
         }
 
         // ============================================================
-        // SINCRONIZACIÓN CON GITHUB (MEJORADA)
+        // SINCRONIZACIÓN CON GITHUB (SIN PROXY, PARA GITHUB PAGES)
         // ============================================================
         async function syncFromGitHub(showFeedback = true) {
             if (syncInProgress) {
@@ -753,7 +753,7 @@
             }
 
             let attempts = 0;
-            const maxAttempts = 3;
+            const maxAttempts = 5; // Más intentos para archivos grandes
             let success = false;
             let lastError = null;
 
@@ -762,12 +762,16 @@
                     attempts++;
                     console.log(`🌐 Intento ${attempts}/${maxAttempts} - ${JSON_URL}`);
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+                    const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minutos (archivo grande)
 
                     const response = await fetch(JSON_URL, {
                         signal: controller.signal,
                         cache: 'no-cache',
-                        headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache', 'Accept': 'application/json' }
+                        headers: { 
+                            'Cache-Control': 'no-cache', 
+                            'Pragma': 'no-cache', 
+                            'Accept': 'application/json'
+                        }
                     });
                     clearTimeout(timeoutId);
 
@@ -776,18 +780,16 @@
                     }
 
                     const data = await response.json();
-                    console.log('📦 Datos recibidos:', data);
+                    console.log('📦 Datos recibidos:', typeof data, Array.isArray(data) ? data.length + ' productos' : 'objeto');
 
-                    // 🔥 DETECCIÓN DE FORMATO
+                    // Detectar formato del JSON
                     let productosNuevos = [];
                     if (Array.isArray(data)) {
-                        // Es un array directo de productos
                         productosNuevos = data;
                     } else if (data.productos && Array.isArray(data.productos)) {
-                        // Es un objeto con propiedad "productos"
                         productosNuevos = data.productos;
                     } else {
-                        throw new Error('Formato de datos no reconocido: ni array ni objeto con "productos"');
+                        throw new Error('Formato no reconocido: ni array ni objeto con "productos"');
                     }
 
                     if (productosNuevos.length === 0) {
@@ -802,7 +804,7 @@
                     productos.forEach(p => { if (p.categoria) cats.add(p.categoria); });
                     categorias = Array.from(cats);
 
-                    // Configuración adicional (si existe)
+                    // Configuración adicional
                     if (data.config && data.config.whatsapp) {
                         config.whatsapp = data.config.whatsapp;
                         saveConfigLocal();
@@ -943,7 +945,6 @@
             let html = '';
             productos.forEach(p => {
                 const estado = p.activo !== false ? 'Activo' : 'Inactivo';
-                const estadoClase = p.activo !== false ? 'estado-activo' : 'estado-inactivo';
                 const imgSrc = p.imagenBase64 || 'https://placehold.co/55x55';
                 html += `
                     <div class="list-item">
@@ -1040,7 +1041,6 @@
             let image = document.getElementById('existingImage').value || '';
             if (tempImageBase64) image = tempImageBase64;
 
-            // Si hay archivo nuevo, leerlo
             const file = document.getElementById('prodImageFile').files[0];
             if (file) {
                 const reader = new FileReader();
@@ -1212,9 +1212,6 @@
             const url = document.getElementById('importUrl').value.trim();
             if (!url) { showToast('Ingresa una URL', true); return; }
             if (!confirm('Reemplazará todos los productos. ¿Continuar?')) return;
-            // Usar la misma lógica de sincronización pero con la URL personalizada
-            const originalUrl = JSON_URL;
-            // No podemos cambiar fácilmente la URL en syncFromGitHub, así que usamos fetch directo
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -1316,13 +1313,12 @@
                 reader.readAsDataURL(file);
             });
 
-            console.log('✅ NEO·SOLAR iniciado');
+            console.log('✅ NEO·SOLAR iniciado para GitHub Pages');
             console.log('📦 Productos:', productos.length);
             console.log('📱 WhatsApp:', getWhatsAppNumber());
-            console.log('🔄 Sincronización automática completada.');
         }
 
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
-    </html>
+</html>
