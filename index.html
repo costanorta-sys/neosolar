@@ -587,7 +587,7 @@
                 </div>
                 <div class="io-group">
                     <label>Importar desde URL</label>
-                    <input type="text" id="importUrl" placeholder="URL del JSON" value="https://raw.githubusercontent.com/costanorta-sys/neosolar/main/neosolar_catalog.json">
+                    <input type="text" id="importUrl" placeholder="URL del JSON" value="./neosolar_catalog.json">
                     <button class="btn-neon admin" onclick="importFromURL()"><i class="fas fa-upload"></i> Cargar</button>
                 </div>
                 <div class="io-group">
@@ -626,12 +626,10 @@
 
     <script>
         // ============================================================
-        // CONFIGURACIÓN CON PROXY CORS
+        // CONFIGURACIÓN - SIN PROXY, URL RELATIVA PARA GITHUB PAGES
         // ============================================================
-        // 🔥 ESTA ES LA CLAVE: Usamos un proxy para evitar el bloqueo CORS
-        const PROXY_URL = 'https://api.allorigins.win/raw?url=';
-        const RAW_URL = 'https://raw.githubusercontent.com/costanorta-sys/neosolar/main/neosolar_catalog.json';
-        const JSON_URL = PROXY_URL + encodeURIComponent(RAW_URL);
+        // 🔥 ¡IMPORTANTE! El archivo JSON debe estar en la raíz del repositorio
+        const JSON_URL = './neosolar_catalog.json';
         
         const STORAGE_KEY = 'neosolar_products';
         const CONFIG_KEY = 'neosolar_config';
@@ -741,7 +739,7 @@
         }
 
         // ============================================================
-        // SINCRONIZACIÓN CON GITHUB (CON PROXY)
+        // SINCRONIZACIÓN CON GITHUB PAGES (SIN CORS)
         // ============================================================
         async function syncFromGitHub(showFeedback = true) {
             if (syncInProgress) {
@@ -754,7 +752,7 @@
                 document.getElementById('loadingSpinner').style.display = 'flex';
             }
 
-            console.log('🌐 Usando proxy CORS:', JSON_URL);
+            console.log('🌐 Cargando desde:', JSON_URL);
 
             let attempts = 0;
             const maxAttempts = 5;
@@ -1281,7 +1279,8 @@
         // INICIALIZACIÓN
         // ============================================================
         async function init() {
-            console.log('🚀 Iniciando NEO·SOLAR con proxy CORS');
+            console.log('🚀 Iniciando NEO·SOLAR con URL relativa');
+            console.log('📁 JSON URL:', JSON_URL);
             
             // Cargar datos locales primero
             loadLocalData();
@@ -1294,7 +1293,7 @@
             renderProductos();
             renderAdminList();
 
-            // Luego sincronizar desde GitHub (con proxy)
+            // Luego sincronizar desde GitHub Pages
             await syncFromGitHub(true);
 
             // Manejar hash
@@ -1319,7 +1318,7 @@
                 reader.readAsDataURL(file);
             });
 
-            console.log('✅ NEO·SOLAR iniciado con proxy');
+            console.log('✅ NEO·SOLAR iniciado correctamente');
             console.log('📦 Productos:', productos.length);
             console.log('📱 WhatsApp:', getWhatsAppNumber());
         }
